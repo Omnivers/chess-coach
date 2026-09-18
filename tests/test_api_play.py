@@ -225,3 +225,105 @@ def test_persisted_evals_stay_full_strength_at_a_weak_elo(
         ]
     assert depths, "the move should have written eval rows"
     assert all(d > weak_depth for d in depths)
+
+
+# --- pause -------------------------------------------------------------
+#
+# The clock is client-reported (`_apply_user_clock` never measures wall
+# time itself), so the only way to make a pause real rather than a UI
+# trick is to have the server refuse moves/guards/hints while paused. These
+# tests pin that refusal, that pausing/resuming round-trips the flag and
+# clock correctly, and that a terminated game can't be paused.
+
+
+def test_play_pause_and_resume_report_flag_and_clock(client) -> None:
+    new = client.post(
+        "/play/new", json={"user_color": "white", "engine_elo": 1200},
+    ).json()
+    game_id = new["game_id"]
+
+    paused = client.post(f"/play/{game_id}/pause", json={"paused": True})
+    assert paused.status_code == 200
+    body = paused.json()
+    assert body["paused"] is True
+    assert body["clock"] is not None
+
+    resumed = client.post(f"/play/{game_id}/pause", json={"paused": False})
+    assert resumed.status_code == 200
+    assert resumed.json()["paused"] is False
+
+
+def test_play_move_rejected_while_paused_and_not_applied(client) -> None:
+    new = client.post(
+        "/play/new", json={"user_color": "white", "engine_elo": 1200},
+    ).json()
+    game_id = new["game_id"]
+    client.post(f"/play/{game_id}/pause", json={"paused": True})
+
+    before_fen = client.get(f"/play/{game_id}").json()["fen"]
+    resp = client.post(f"/play/{game_id}/move", json={"uci": "e2e4"})
+    assert resp.status_code == 409
+
+    after_fen = client.get(f"/play/{game_id}").json()["fen"]
+    assert after_fen == before_fen
+
+
+def test_play_hint_rejected_while_paused_and_no_credit_spent(client) -> None:
+    new = client.post(
+        "/play/new", json={"user_color": "white", "engine_elo": 1200},
+    ).json()
+    game_id = new["game_id"]
+    credits_before = client.get(f"/play/{game_id}").json()["hint_credits"]
+    client.post(f"/play/{game_id}/pause", json={"paused": True})
+
+    resp = client.post(f"/play/{game_id}/hint", json={"tier": 1})
+    assert resp.status_code == 409
+
+    credits_after = client.get(f"/play/{game_id}").json()["hint_credits"]
+    assert credits_after == credits_before
+
+
+def test_play_guard_rejected_while_paused(client) -> None:
+    new = client.post(
+        "/play/new", json={"user_color": "white", "engine_elo": 1200},
+    ).json()
+    game_id = new["game_id"]
+    client.post(f"/play/{game_id}/pause", json={"paused": True})
+
+    resp = client.post(f"/play/{game_id}/guard", json={"uci": "e2e4"})
+    assert resp.status_code == 409
+
+
+def test_play_move_succeeds_after_resume(client) -> None:
+    new = client.post(
+        "/play/new", json={"user_color": "white", "engine_elo": 1200},
+    ).json()
+    game_id = new["game_id"]
+    client.post(f"/play/{game_id}/pause", json={"paused": True})
+    client.post(f"/play/{game_id}/pause", json={"paused": False})
+
+    resp = client.post(f"/play/{game_id}/move", json={"uci": "e2e4"})
+    assert resp.status_code == 200
+    assert resp.json()["user_move_san"] == "e4"
+
+
+def test_play_state_reports_paused_flag(client) -> None:
+    new = client.post(
+        "/play/new", json={"user_color": "white", "engine_elo": 1200},
+    ).json()
+    game_id = new["game_id"]
+    assert client.get(f"/play/{game_id}").json()["paused"] is False
+
+    client.post(f"/play/{game_id}/pause", json={"paused": True})
+    assert client.get(f"/play/{game_id}").json()["paused"] is True
+
+
+def test_play_pause_rejected_for_terminated_game(client) -> None:
+    new = client.post(
+        "/play/new", json={"user_color": "white", "engine_elo": 1200},
+    ).json()
+    game_id = new["game_id"]
+    client.post(f"/play/{game_id}/resign")
+
+    resp = client.post(f"/play/{game_id}/pause", json={"paused": True})
+    assert resp.status_code == 400

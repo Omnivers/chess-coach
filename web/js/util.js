@@ -1,5 +1,10 @@
 // Formatters and small pure helpers shared across views. No DOM, no state.
 
+import { makeT } from './i18n.js';
+import { strings } from './strings/util.js';
+
+const t = makeT(strings);
+
 export function formatClock(ms) {
   if (ms === null || ms === undefined || Number.isNaN(ms)) return '—:—';
   const total = Math.max(0, Math.round(ms / 1000));
@@ -38,18 +43,27 @@ export function sanPairs(sanList) {
 export function feedbackBadge(feedback) {
   if (!feedback) return null;
   if (feedback.highlight) return { cls: 'good', label: prettyHighlight(feedback.highlight) };
-  if (feedback.severity) return { cls: severityClass(feedback.severity), label: feedback.severity };
+  if (feedback.severity) return { cls: severityClass(feedback.severity), label: prettyHighlight(feedback.severity) };
   return null;
 }
 
+// This is a CSS class name, not a label — never translate it.
 export function severityClass(severity) {
   if (severity === 'blunder') return 'bad';
   if (severity === 'mistake' || severity === 'inaccuracy') return 'warn';
   return 'good';
 }
 
+function hasLabel(key) {
+  return Object.prototype.hasOwnProperty.call(strings.fr, key) || Object.prototype.hasOwnProperty.call(strings.en, key);
+}
+
 export function prettyHighlight(kind) {
-  return String(kind).replace(/_/g, ' ');
+  const key = String(kind);
+  // Known highlight kinds / motifs / severities get a proper label; an
+  // unrecognised (e.g. new server-side) kind still renders as something
+  // readable instead of a raw snake_case key.
+  return hasLabel(key) ? t(key) : key.replace(/_/g, ' ');
 }
 
 // Renders a value that may be null as an em dash — NEVER as 0. Coaching

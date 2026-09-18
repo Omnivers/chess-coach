@@ -14,6 +14,7 @@ function initialState() {
       userColor: 'white',
       isUserTurn: false,
       terminated: false,
+      paused: false,
       result: null,
       clock: null,
       hintCredits: 6,

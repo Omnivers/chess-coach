@@ -36,6 +36,11 @@ class LiveGame:
     # Hint ladder (ROADMAP §2.1): 6 credits/game, never replenished.
     hint_credits: int = 6
     guard_fired: bool = False
+    # Pause is in-memory only and deliberately not mirrored into
+    # `live_state`: persisting it would need a schema migration, and a game
+    # resumed after a server restart should come back running rather than
+    # stuck paused with no UI to unstick it.
+    paused: bool = False
 
 
 TIME_CONTROLS: dict[str, Optional[tuple[int, int]]] = {

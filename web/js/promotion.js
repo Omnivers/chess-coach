@@ -2,6 +2,11 @@
 // hands back orig/dest on a user move, so a pawn reaching the last rank has
 // to pause here for a piece choice before the UCI is built.
 
+import { makeT } from './i18n.js';
+import { strings } from './strings/promotion.js';
+
+const t = makeT(strings);
+
 export function askPromotion(pickerEl, color) {
   return new Promise((resolve) => {
     const glyphs = color === 'w'
@@ -18,12 +23,12 @@ export function askPromotion(pickerEl, color) {
     for (const p of Object.keys(glyphs)) {
       const btn = document.createElement('button');
       btn.textContent = glyphs[p];
-      btn.setAttribute('aria-label', `Promote to ${p}`);
+      btn.setAttribute('aria-label', t('promoteTo', { piece: t('piece_' + p) }));
       btn.addEventListener('click', () => finish(p));
       pickerEl.appendChild(btn);
     }
     const cancel = document.createElement('button');
-    cancel.textContent = 'Cancel';
+    cancel.textContent = t('cancel');
     cancel.addEventListener('click', () => finish(null));
     pickerEl.appendChild(cancel);
   });

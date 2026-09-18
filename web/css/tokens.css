@@ -1,70 +1,87 @@
-/* Design tokens — "the study, after hours".
+/* Design tokens — "night club".
  *
- * Direction: a warm, low-chroma espresso ground with cream ink, one cool
- * petrol-blue instrument accent, and a classic high-contrast cream/walnut
- * board. Not a grey SaaS dark mode, and not the all-one-brown version this
- * replaced — that failed because the page, the panels and the board's dark
- * squares all sat within five lightness points of each other in the same
- * hue, so nothing separated figure from ground and the whole screen read as
- * mud. The rules that came out of that:
+ * Third direction, and a deliberate break rather than another adjustment.
+ * The first two were both warm: cream paper, walnut/espresso ground, a
+ * brown-orange board. Both were rejected on colour, so the warm family is
+ * abandoned here entirely instead of being nudged one more time.
+ *
+ * Direction: a cool graphite room, a steel-blue tournament board, and one
+ * champagne-gold accent. The reference is a club at night — dark wood
+ * replaced by dark metal, the board lit and everything else receding from
+ * it. The rules that survived from the previous attempts, because they were
+ * about structure rather than taste:
  *
  *  1. SURFACES SEPARATE BY LIGHTNESS, NOT HUE. paper -> paper-raised ->
- *     paper-high step by ~5%, ~5%, and the board's two square colours sit a
- *     full 40 points apart. A chessboard whose light and dark squares are
- *     hard to tell apart is not a style choice, it's a broken board.
- *  2. THE GROUND IS ALMOST ACHROMATIC. Chroma 0.010 on the dark surfaces:
- *     enough warmth to read as paper/wood, not enough to read as brown
- *     paint. Saturation is spent on the four semantic colours, nowhere else.
- *  3. COLOUR IS SEMANTIC ONLY. good/warn/bad mean move quality and nothing
- *     else; accent means "the engine spoke". Nothing on this site is
- *     coloured for decoration, which is why the accent can stay loud.
+ *     paper-high step ~5 points each. The board's two square colours sit
+ *     ~37 points apart: a board whose squares are hard to tell apart is not
+ *     a style choice, it's a broken board.
+ *  2. THE GROUND IS NEARLY ACHROMATIC. Chroma 0.020 or less on every
+ *     surface. All the saturation is spent on the board and the five
+ *     semantic colours.
+ *  3. COLOUR IS SEMANTIC ONLY. good/warn/bad mean move quality; accent
+ *     means "this is the thing to look at". Nothing is coloured for
+ *     decoration, which is why the accent can stay loud.
+ *  4. NO TWO SEMANTIC COLOURS SHARE A HUE. The previous palette had a gold
+ *     accent and an amber `warn` twenty degrees apart, so a warning badge
+ *     and a link were the same colour. Gold is the accent; `warn` is pushed
+ *     to orange, well clear of it.
  */
 
 :root {
   /* --- surfaces: page, panel, the thing on top of the panel --- */
-  --paper:        oklch(95.5% 0.010 85);
-  --paper-raised: oklch(99% 0.006 85);
+  --paper:        oklch(96.5% 0.005 255);
+  --paper-raised: oklch(99.3% 0.003 255);
   --paper-high:   oklch(100% 0 0);
 
-  --ink:          oklch(21% 0.018 55);
-  --ink-soft:     oklch(44% 0.018 55);
-  --ink-faint:    oklch(62% 0.014 60);
-  --rule:         oklch(86% 0.012 75);
+  --ink:          oklch(24% 0.025 258);
+  --ink-soft:     oklch(46% 0.022 258);
+  --ink-faint:    oklch(64% 0.018 258);
+  --rule:         oklch(88% 0.010 255);
 
-  /* The board is the one place chroma is allowed to run: 40 points of
-     lightness between the squares, so the position is legible at a glance
-     and from across the room. */
-  --board-light:  oklch(90% 0.035 82);
-  --board-dark:   oklch(50% 0.080 48);
+  /* A faint cool wash so the page is a lit room rather than a flat fill.
+     Two very wide, very weak radials — invisible as colour, visible as
+     depth. */
+  --wash-1: oklch(70% 0.045 250 / 0.10);
+  --wash-2: oklch(80% 0.040 90 / 0.07);
 
-  --good:         oklch(50% 0.135 150);
-  --warn:         oklch(62% 0.145 68);
-  --bad:          oklch(52% 0.180 25);
-  --accent:       oklch(45% 0.130 238);
+  /* The board is the one place chroma is allowed to run. Steel blue and
+     porcelain: the tournament-board pairing, and the one colour on screen
+     that is allowed to be a colour rather than a value. */
+  --board-light:  oklch(89% 0.022 245);
+  --board-dark:   oklch(50% 0.062 252);
+
+  --good:         oklch(52% 0.140 152);
+  --warn:         oklch(57% 0.150 52);
+  --bad:          oklch(52% 0.185 25);
+  --accent:       oklch(51% 0.105 78);
 
   /* on-color text for filled badges */
-  --on-good:   oklch(98% 0.01 150);
-  --on-warn:   oklch(20% 0.02 68);
+  --on-good:   oklch(98% 0.01 152);
+  --on-warn:   oklch(99% 0.01 52);
   --on-bad:    oklch(98% 0.01 25);
-  --on-accent: oklch(99% 0.01 238);
+  --on-accent: oklch(99% 0.01 78);
 
-  --shadow-color: 55 12% 30%;
-  --shadow-1: 0 1px 2px hsl(var(--shadow-color) / 0.07),
-              0 2px 8px -2px hsl(var(--shadow-color) / 0.06);
-  --shadow-2: 0 2px 4px hsl(var(--shadow-color) / 0.08),
-              0 12px 28px -8px hsl(var(--shadow-color) / 0.14);
+  --shadow-color: 250 25% 25%;
+  --shadow-1: 0 1px 2px hsl(var(--shadow-color) / 0.08),
+              0 2px 8px -2px hsl(var(--shadow-color) / 0.07);
+  --shadow-2: 0 2px 4px hsl(var(--shadow-color) / 0.09),
+              0 14px 32px -10px hsl(var(--shadow-color) / 0.16);
 
-  /* type */
+  /* Type: a pairing, not one family doing both jobs. The previous version
+     set the whole interface in Spectral — a text serif, asked to render
+     clocks, button labels and table rows it was never cut for, which is a
+     large part of why the screen read as dated. Spectral keeps the
+     headings, where it is actually good; Archivo (a tight grotesk with
+     more character than the usual UI sans) takes the interface; JetBrains
+     Mono keeps anything that has to line up in a column. */
+  --font-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
   --font-serif: 'Spectral', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
-  /* Type scale. The old design had exactly one size for every heading on
-     the site (0.72rem, uppercase, faint) and no scale contrast anywhere —
-     which is most of why it read as unfinished. */
   --text-label: 0.72rem;   /* uppercase letterspaced eyebrow */
   --text-fine:  0.78rem;   /* captions, costs, notes */
   --text-body:  0.88rem;
-  --text-h2:    1.06rem;   /* section titles, serif */
+  --text-h2:    1.08rem;   /* section titles, serif */
   --text-h1:    1.35rem;
   --text-display: clamp(1.6rem, 1.1rem + 1.6vw, 2.4rem);
 
@@ -76,75 +93,81 @@
   --space-5: 2rem;
   --space-6: 3.25rem;
 
-  --radius-sm: 3px;
-  --radius-md: 6px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
 
   --duration-fast: 120ms;
   --duration-normal: 240ms;
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Dark: espresso ground, cream ink. Defined once here and re-applied under
-   the explicit [data-theme="dark"] selector below so the in-app toggle wins
-   over the OS preference in both directions. */
+/* Dark is the direction's home key: graphite room, lit board. Defined once
+   here and re-applied under the explicit [data-theme="dark"] selector below
+   so the in-app toggle wins over the OS preference in both directions. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper:        oklch(17% 0.010 55);
-    --paper-raised: oklch(22.5% 0.012 55);
-    --paper-high:   oklch(27% 0.013 55);
+    --paper:        oklch(20.5% 0.018 258);
+    --paper-raised: oklch(25.5% 0.020 258);
+    --paper-high:   oklch(30% 0.022 258);
 
-    --ink:          oklch(95% 0.010 85);
-    --ink-soft:     oklch(78% 0.012 82);
-    --ink-faint:    oklch(57% 0.012 78);
-    --rule:         oklch(31% 0.014 55);
+    --ink:          oklch(97% 0.004 258);
+    --ink-soft:     oklch(79% 0.012 258);
+    --ink-faint:    oklch(62% 0.016 258);
+    --rule:         oklch(35.5% 0.022 258);
 
-    --board-light:  oklch(84% 0.040 82);
-    --board-dark:   oklch(42% 0.075 48);
+    --wash-1: oklch(60% 0.080 250 / 0.16);
+    --wash-2: oklch(70% 0.070 85 / 0.08);
 
-    --good:         oklch(72% 0.155 150);
-    --warn:         oklch(78% 0.145 72);
-    --bad:          oklch(66% 0.190 25);
-    --accent:       oklch(70% 0.135 235);
+    --board-light:  oklch(85% 0.028 245);
+    --board-dark:   oklch(46% 0.068 252);
 
-    --on-good:   oklch(16% 0.02 150);
-    --on-warn:   oklch(16% 0.02 72);
-    --on-bad:    oklch(16% 0.02 25);
-    --on-accent: oklch(14% 0.02 235);
+    --good:         oklch(76% 0.155 152);
+    --warn:         oklch(76% 0.160 55);
+    --bad:          oklch(68% 0.190 25);
+    --accent:       oklch(82% 0.120 88);
 
-    --shadow-color: 40 30% 2%;
-    --shadow-1: 0 1px 2px hsl(var(--shadow-color) / 0.5),
-                0 2px 8px -2px hsl(var(--shadow-color) / 0.4);
-    --shadow-2: 0 2px 4px hsl(var(--shadow-color) / 0.5),
-                0 14px 32px -8px hsl(var(--shadow-color) / 0.6);
+    --on-good:   oklch(17% 0.02 152);
+    --on-warn:   oklch(17% 0.02 55);
+    --on-bad:    oklch(17% 0.02 25);
+    --on-accent: oklch(17% 0.02 88);
+
+    --shadow-color: 255 45% 2%;
+    --shadow-1: 0 1px 2px hsl(var(--shadow-color) / 0.55),
+                0 2px 8px -2px hsl(var(--shadow-color) / 0.45);
+    --shadow-2: 0 2px 4px hsl(var(--shadow-color) / 0.55),
+                0 16px 36px -10px hsl(var(--shadow-color) / 0.65);
   }
 }
 
 :root[data-theme="dark"] {
-  --paper:        oklch(17% 0.010 55);
-  --paper-raised: oklch(22.5% 0.012 55);
-  --paper-high:   oklch(27% 0.013 55);
+  --paper:        oklch(20.5% 0.018 258);
+  --paper-raised: oklch(25.5% 0.020 258);
+  --paper-high:   oklch(30% 0.022 258);
 
-  --ink:          oklch(95% 0.010 85);
-  --ink-soft:     oklch(78% 0.012 82);
-  --ink-faint:    oklch(57% 0.012 78);
-  --rule:         oklch(31% 0.014 55);
+  --ink:          oklch(97% 0.004 258);
+  --ink-soft:     oklch(79% 0.012 258);
+  --ink-faint:    oklch(62% 0.016 258);
+  --rule:         oklch(35.5% 0.022 258);
 
-  --board-light:  oklch(84% 0.040 82);
-  --board-dark:   oklch(42% 0.075 48);
+  --wash-1: oklch(60% 0.080 250 / 0.16);
+  --wash-2: oklch(70% 0.070 85 / 0.08);
 
-  --good:         oklch(72% 0.155 150);
-  --warn:         oklch(78% 0.145 72);
-  --bad:          oklch(66% 0.190 25);
-  --accent:       oklch(70% 0.135 235);
+  --board-light:  oklch(85% 0.028 245);
+  --board-dark:   oklch(46% 0.068 252);
 
-  --on-good:   oklch(16% 0.02 150);
-  --on-warn:   oklch(16% 0.02 72);
-  --on-bad:    oklch(16% 0.02 25);
-  --on-accent: oklch(14% 0.02 235);
+  --good:         oklch(76% 0.155 152);
+  --warn:         oklch(76% 0.160 55);
+  --bad:          oklch(68% 0.190 25);
+  --accent:       oklch(82% 0.120 88);
 
-  --shadow-color: 40 30% 2%;
-  --shadow-1: 0 1px 2px hsl(var(--shadow-color) / 0.5),
-              0 2px 8px -2px hsl(var(--shadow-color) / 0.4);
-  --shadow-2: 0 2px 4px hsl(var(--shadow-color) / 0.5),
-              0 14px 32px -8px hsl(var(--shadow-color) / 0.6);
+  --on-good:   oklch(17% 0.02 152);
+  --on-warn:   oklch(17% 0.02 55);
+  --on-bad:    oklch(17% 0.02 25);
+  --on-accent: oklch(17% 0.02 88);
+
+  --shadow-color: 255 45% 2%;
+  --shadow-1: 0 1px 2px hsl(var(--shadow-color) / 0.55),
+              0 2px 8px -2px hsl(var(--shadow-color) / 0.45);
+  --shadow-2: 0 2px 4px hsl(var(--shadow-color) / 0.55),
+              0 16px 36px -10px hsl(var(--shadow-color) / 0.65);
 }

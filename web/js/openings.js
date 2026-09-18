@@ -7,6 +7,10 @@
 
 import { api } from './api.js';
 import { createBoard } from './board.js';
+import { makeT } from './i18n.js';
+import { strings } from './strings/openings.js';
+
+const t = makeT(strings);
 
 let board = null;
 let els = {};
@@ -21,32 +25,29 @@ let onKeydown = null;
 export function mount(root) {
   root.innerHTML = `
     <div class="stack">
-      <h1>How to start a game</h1>
+      <h1>${t('heading')}</h1>
       <p class="openings-intro">
-        These are the handful of principles worth knowing before you play a move, plus
-        one model line per situation so you can see them in action. This isn't a
-        repertoire to memorise — once you have real games logged, your own opening
-        work will be built from those instead.
+        ${t('intro')}
       </p>
       <div id="openings-error"></div>
       <div id="openings-wrap" hidden>
-        <div class="cluster" id="line-picker" role="group" aria-label="Choose a line"></div>
+        <div class="cluster" id="line-picker" role="group" aria-label="${t('chooseLineAria')}"></div>
         <div class="openings-layout" id="openings-layout">
-          <section class="board-col" aria-label="Opening line board">
+          <section class="board-col" aria-label="${t('boardAria')}">
             <div id="board-wrap"><div id="openings-board" class="board-surface"></div></div>
             <p class="openings-subtitle" id="line-subtitle"></p>
             <div class="panel stack note-panel" aria-live="polite">
-              <h2>This move</h2>
+              <h2>${t('thisMoveHeading')}</h2>
               <div id="ply-note"></div>
             </div>
           </section>
-          <aside class="stack" aria-label="Moves and principles">
+          <aside class="stack" aria-label="${t('movesAndPrinciplesAria')}">
             <div class="panel stack">
-              <h2>The line</h2>
-              <ol class="opening-moves" id="opening-moves" aria-label="Moves"></ol>
+              <h2>${t('theLineHeading')}</h2>
+              <ol class="opening-moves" id="opening-moves" aria-label="${t('movesAria')}"></ol>
             </div>
             <div class="panel stack">
-              <h2>Principles</h2>
+              <h2>${t('principlesHeading')}</h2>
               <div class="principle-grid" id="principle-grid"></div>
             </div>
           </aside>
@@ -93,7 +94,7 @@ async function load() {
     els.error.innerHTML = '';
     const p = document.createElement('p');
     p.className = 'inline-error';
-    p.textContent = `Could not load the opening primer: ${err.message}`;
+    p.textContent = t('loadError', { message: err.message });
     els.error.appendChild(p);
     return;
   }
@@ -187,7 +188,7 @@ function renderMoveList() {
   const startBtn = document.createElement('button');
   startBtn.type = 'button';
   startBtn.className = 'opening-ply';
-  startBtn.textContent = 'Starting position';
+  startBtn.textContent = t('startingPosition');
   if (currentPly === 0) startBtn.classList.add('current');
   startBtn.addEventListener('click', () => goToPly(0));
   start.appendChild(startBtn);
@@ -227,7 +228,7 @@ function renderNote() {
   if (!currentLine) return;
   if (currentPly === 0) {
     const p = document.createElement('p');
-    p.textContent = 'The starting position. Pick a line above, then step through it.';
+    p.textContent = t('startingNote');
     els.note.appendChild(p);
     return;
   }
@@ -242,7 +243,7 @@ function renderNote() {
     }
   }
   const p = document.createElement('p');
-  p.textContent = ply.note || 'A natural reply.';
+  p.textContent = ply.note || t('naturalReply');
   els.note.appendChild(p);
 }
 

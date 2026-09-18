@@ -5,6 +5,10 @@
 
 import { api, ApiError, streamChat } from './api.js';
 import { getState, setState } from './state.js';
+import { makeT } from './i18n.js';
+import { strings } from './strings/chat.js';
+
+const t = makeT(strings);
 
 let els = {};
 let messages = [];
@@ -19,11 +23,11 @@ export function mount(root) {
       <span class="chat-title"><span class="dot" id="chat-dot"></span>Hermes</span>
       <button id="chat-toggle" type="button" aria-expanded="true" aria-controls="chat-log">⇕</button>
     </div>
-    <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="Chat with Hermes"></div>
+    <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-label="${t('logAriaLabel')}"></div>
     <form class="chat-composer" id="chat-form">
-      <label class="visually-hidden" for="chat-input">Message Hermes</label>
-      <textarea id="chat-input" rows="1" placeholder="Ask Hermes…" disabled></textarea>
-      <button type="submit" id="chat-send" disabled>Send</button>
+      <label class="visually-hidden" for="chat-input">${t('inputLabel')}</label>
+      <textarea id="chat-input" rows="1" placeholder="${t('inputPlaceholder')}" disabled></textarea>
+      <button type="submit" id="chat-send" disabled>${t('send')}</button>
     </form>
   `;
   els = {
@@ -81,11 +85,11 @@ async function checkStatus() {
       els.send.disabled = false;
     } else {
       els.dot.classList.add('offline');
-      addNotice(status.reason || 'Hermes is not available right now.');
+      addNotice(status.reason || t('unavailable'));
     }
   } catch (err) {
     els.dot.classList.add('offline');
-    addNotice(`Could not reach the coach service: ${err.message}`);
+    addNotice(t('unreachable', { message: err.message }));
   }
 }
 
@@ -102,7 +106,7 @@ function addLine(role, text) {
   line.className = `chat-line ${role}`;
   const roleEl = document.createElement('span');
   roleEl.className = 'role';
-  roleEl.textContent = role === 'user' ? 'you' : 'hermes';
+  roleEl.textContent = role === 'user' ? t('roleYou') : t('roleCoach');
   const textEl = document.createElement('span');
   textEl.className = 'text';
   textEl.textContent = text;
@@ -139,12 +143,12 @@ async function send() {
       scrollIfPinned();
     });
     if (acc) messages.push({ role: 'assistant', content: acc });
-    else assistantEl.textContent = '(no response)';
+    else assistantEl.textContent = t('noResponse');
   } catch (err) {
     const message = err instanceof ApiError ? err.message : String(err.message || err);
     assistantEl.textContent = '';
     assistantEl.parentElement.remove();
-    addNotice(`Message failed: ${message}`);
+    addNotice(t('sendFailed', { message }));
   } finally {
     sending = false;
     els.input.disabled = false;

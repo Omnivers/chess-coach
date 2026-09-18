@@ -6,6 +6,10 @@ import { api } from './api.js';
 import { createBoard } from './board.js';
 import { createScrubber } from './scrubber.js';
 import { severityClass, prettyHighlight, naOr, uciToSquares } from './util.js';
+import { makeT } from './i18n.js';
+import { strings } from './strings/review.js';
+
+const t = makeT(strings);
 
 let board = null;
 let scrubber = null;
@@ -26,36 +30,36 @@ function sanOf(move) {
 export function mount(root, params) {
   root.innerHTML = `
     <div class="review-layout">
-      <section class="board-col" aria-label="Position">
+      <section class="board-col" aria-label="${t('positionAria')}">
         <div id="board-wrap"><div id="review-board" class="board-surface"></div></div>
         <div class="review-controls">
-          <button id="rev-first">⏮</button>
-          <button id="rev-prev">◀</button>
-          <button id="rev-next">▶</button>
-          <button id="rev-last">⏭</button>
+          <button id="rev-first" title="${t('firstTitle')}" aria-label="${t('firstTitle')}">⏮</button>
+          <button id="rev-prev" title="${t('prevTitle')}" aria-label="${t('prevTitle')}">◀</button>
+          <button id="rev-next" title="${t('nextTitle')}" aria-label="${t('nextTitle')}">▶</button>
+          <button id="rev-last" title="${t('lastTitle')}" aria-label="${t('lastTitle')}">⏭</button>
         </div>
-        <a class="pgn-link" id="pgn-link" target="_blank" rel="noopener">Download annotated PGN</a>
+        <a class="pgn-link" id="pgn-link" target="_blank" rel="noopener">${t('downloadPgn')}</a>
       </section>
-      <section class="stack" aria-label="Review">
+      <section class="stack" aria-label="${t('reviewAria')}">
         <div class="panel stack">
-          <h2>Accuracy</h2>
+          <h2>${t('accuracyHeading')}</h2>
           <div class="review-stats" id="review-stats"></div>
         </div>
-        <div class="panel stack" id="scrubber-wrap" aria-label="Timeline"></div>
+        <div class="panel stack" id="scrubber-wrap" aria-label="${t('timelineAria')}"></div>
         <div class="panel stack">
-          <h2>Moves</h2>
+          <h2>${t('movesHeading')}</h2>
           <div class="move-list" id="move-list"></div>
         </div>
         <div class="panel stack" aria-labelledby="review-summary-h">
-          <h2 id="review-summary-h">Coach's take</h2>
-          <div class="review-summary" id="review-summary">Loading…</div>
+          <h2 id="review-summary-h">${t('coachTakeHeading')}</h2>
+          <div class="review-summary" id="review-summary">${t('loading')}</div>
         </div>
         <div class="panel stack">
-          <h2>What went well</h2>
+          <h2>${t('wentWellHeading')}</h2>
           <div class="review-list-block" id="highlight-list"></div>
         </div>
         <div class="panel stack">
-          <h2>Worth a second look</h2>
+          <h2>${t('secondLookHeading')}</h2>
           <div class="review-list-block" id="mistake-list"></div>
         </div>
       </section>
@@ -89,12 +93,12 @@ export function unmount() {
 }
 
 async function load(externalId) {
-  els.summary.textContent = 'Loading…';
+  els.summary.textContent = t('loading');
   els.pgnLink.href = `/review/${externalId}/pgn`;
   try {
     data = await api.get(`/review/${externalId}`);
   } catch (err) {
-    els.summary.textContent = `Could not load this game: ${err.message}`;
+    els.summary.textContent = t('loadError', { message: err.message });
     return;
   }
   renderStats();
@@ -115,17 +119,17 @@ async function loadSummary(externalId) {
       p.textContent = para;
       els.summary.appendChild(p);
     }
-    if (!els.summary.childElementCount) els.summary.textContent = 'No summary available.';
+    if (!els.summary.childElementCount) els.summary.textContent = t('noSummary');
   } catch (err) {
-    els.summary.textContent = `Summary unavailable: ${err.message}`;
+    els.summary.textContent = t('summaryError', { message: err.message });
   }
 }
 
 function renderStats() {
   els.stats.innerHTML = '';
   const rows = [
-    ['Accuracy', naOr(data.accuracy, (v) => `${v.toFixed(1)}%`)],
-    ['ACPL', naOr(data.acpl, (v) => v.toFixed(0))],
+    [t('accuracyLabel'), naOr(data.accuracy, (v) => `${v.toFixed(1)}%`)],
+    [t('acplLabel'), naOr(data.acpl, (v) => v.toFixed(0))],
   ];
   for (const [label, value] of rows) {
     const stat = document.createElement('div');
@@ -179,7 +183,7 @@ function renderList(container, items, kind) {
   if (!items.length) {
     const empty = document.createElement('p');
     empty.className = 'muted';
-    empty.textContent = kind === 'highlight' ? 'Nothing flagged yet.' : 'No mistakes flagged — clean game.';
+    empty.textContent = kind === 'highlight' ? t('nothingFlagged') : t('noMistakes');
     container.appendChild(empty);
     return;
   }
@@ -192,7 +196,7 @@ function renderList(container, items, kind) {
     head.className = 'item-head';
     const san = document.createElement('span');
     san.className = 'san';
-    san.textContent = move ? sanOf(move) : `Ply ${index}`;
+    san.textContent = move ? sanOf(move) : t('plyLabel', { n: index });
     const tag = document.createElement('span');
     tag.className = `badge ${kind === 'highlight' ? 'good' : severityClass(item.severity || 'inaccuracy')}`;
     tag.textContent = prettyHighlight(item.motif || item.kind || item.severity || kind);
@@ -209,12 +213,12 @@ function renderList(container, items, kind) {
     if (bestUci) {
       const pv = document.createElement('div');
       pv.className = 'pv';
-      pv.textContent = `Better: ${bestUci}${item.pv ? ' ' + item.pv.join(' ') : ''}`;
+      pv.textContent = `${t('betterLabel')} ${bestUci}${item.pv ? ' ' + item.pv.join(' ') : ''}`;
       detail.appendChild(pv);
     }
     if (!detail.childElementCount) {
       const p = document.createElement('p');
-      p.textContent = 'No further detail from the engine for this move.';
+      p.textContent = t('noEngineDetail');
       detail.appendChild(p);
     }
     el.append(head, detail);

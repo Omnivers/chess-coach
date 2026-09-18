@@ -11,6 +11,9 @@
   max-width: 100vw;
   background: var(--paper-raised);
   border-left: 1px solid var(--rule);
+  /* The dock overlaps the page, so it casts: without a shadow a fixed panel
+     at the same lightness as a panel in flow reads as part of the layout. */
+  box-shadow: var(--shadow-2);
   display: flex;
   flex-direction: column;
   z-index: 10;

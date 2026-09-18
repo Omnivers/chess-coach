@@ -143,6 +143,15 @@ class GuardResponse(BaseModel):
     delta_cp: Optional[int]
 
 
+class PauseRequest(BaseModel):
+    paused: bool
+
+
+class PauseResponse(BaseModel):
+    paused: bool
+    clock: Optional[ClockMoves]
+
+
 class HintRequest(BaseModel):
     tier: int
 
@@ -169,6 +178,7 @@ class GameStateResponse(BaseModel):
     move_history: list[str]
     clock: Optional[ClockFull]
     hint_credits: int
+    paused: bool
 
 
 # --- engine helpers -------------------------------------------------------
@@ -448,6 +458,8 @@ def build_router(
         lg = _get_live_game(journal, live_games, game_id)
         if lg.terminated:
             raise HTTPException(400, "game already terminated")
+        if lg.paused:
+            raise HTTPException(409, "game is paused")
         if lg.board.turn != lg.user_color:
             raise HTTPException(400, "not your turn")
         try:
@@ -609,6 +621,8 @@ def build_router(
         lg = _get_live_game(journal, live_games, game_id)
         if lg.terminated:
             raise HTTPException(400, "game already terminated")
+        if lg.paused:
+            raise HTTPException(409, "game is paused")
         try:
             intended = chess.Move.from_uci(req.uci)
         except (ValueError, chess.InvalidMoveError, chess.AmbiguousMoveError):
@@ -616,13 +630,21 @@ def build_router(
         if intended not in lg.board.legal_moves:
             raise HTTPException(400, f"illegal move: {req.uci}")
 
+        # Both evals run at LIVE_DEPTH, not DEFAULT_DEPTH. Two depth-18
+        # searches sit between the user releasing a piece and the move being
+        # sent, which is the single largest source of felt lag in the game —
+        # and the number they produce is compared against a 300cp alarm
+        # threshold, which does not need depth 18 to be right. LIVE_DEPTH is
+        # also what `_live_eval` persists for the same position one request
+        # later, so the guard and the journal now agree instead of scoring
+        # the same position two different ways.
         fen_before = lg.board.fen()
-        before_lines = _analyst_lines(pool, fen_before, multipv=1)
+        before_lines = _analyst_lines(pool, fen_before, multipv=1, depth=LIVE_DEPTH)
         eval_before_cp = before_lines[0].cp if before_lines else None
 
         scratch = lg.board.copy()
         scratch.push(intended)
-        after_lines = _analyst_lines(pool, scratch.fen(), multipv=1)
+        after_lines = _analyst_lines(pool, scratch.fen(), multipv=1, depth=LIVE_DEPTH)
         eval_after_cp = after_lines[0].cp if after_lines else None
 
         delta_cp: Optional[int] = None
@@ -649,6 +671,8 @@ def build_router(
     @r.post("/play/{game_id}/hint", response_model=HintResponse)
     def play_hint(game_id: str, req: HintRequest) -> HintResponse:
         lg = _get_live_game(journal, live_games, game_id)
+        if lg.paused:
+            raise HTTPException(409, "game is paused")
         if req.tier not in HINT_COSTS:
             raise HTTPException(400, "tier must be 0-4")
         cost = HINT_COSTS[req.tier]
@@ -725,6 +749,23 @@ def build_router(
             _finalize(journal, lg)
         return {"ok": True, "result": lg.result}
 
+    @r.post("/play/{game_id}/pause", response_model=PauseResponse)
+    def play_pause(game_id: str, req: PauseRequest) -> PauseResponse:
+        """Stop or restart the game. The clock itself is client-reported
+        (see `_apply_user_clock`), so pausing costs no time simply because
+        the client stops counting — but the flag lives here so the server
+        can refuse moves while it is set. A pause that only existed in the
+        browser would be undone by a reload.
+        """
+        lg = _get_live_game(journal, live_games, game_id)
+        if lg.terminated:
+            raise HTTPException(400, "game already terminated")
+        lg.paused = req.paused
+        clock_out = None
+        if lg.white_ms is not None:
+            clock_out = ClockMoves(white_ms=lg.white_ms, black_ms=lg.black_ms)
+        return PauseResponse(paused=lg.paused, clock=clock_out)
+
     @r.get("/play/{game_id}", response_model=GameStateResponse)
     def play_state(game_id: str) -> GameStateResponse:
         lg = _get_live_game(journal, live_games, game_id)
@@ -744,6 +785,7 @@ def build_router(
             move_history=lg.pgn_so_far,
             clock=clock_out,
             hint_credits=lg.hint_credits,
+            paused=lg.paused,
         )
 
     return r
@@ -753,4 +795,5 @@ __all__ = [
     "build_router", "NewGameRequest", "NewGameResponse",
     "MoveRequest", "MoveResponse", "GameStateResponse",
     "GuardRequest", "GuardResponse", "HintRequest", "HintResponse",
+    "PauseRequest", "PauseResponse",
 ]

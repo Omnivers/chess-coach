@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
     rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=JetBrains+Mono:wght@400;600&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Spectral:wght@500;600&family=JetBrains+Mono:wght@400;600&display=swap"
   />
 
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9.1.1/assets/chessground.base.css" />
@@ -33,6 +33,10 @@
       try {
         var t = localStorage.getItem('chess-coach-theme');
         if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+        // Set before first paint too: <html lang> drives quotes, hyphenation
+        // and screen-reader pronunciation, and main.js boots too late for it.
+        var l = localStorage.getItem('chess-coach-lang');
+        if (l === 'fr' || l === 'en') document.documentElement.lang = l;
       } catch (e) {
         // localStorage unavailable — fall back to prefers-color-scheme only.
       }
@@ -44,18 +48,24 @@
 
   <header>
     <h1>Chess Coach</h1>
-    <nav aria-label="Main navigation">
-      <a href="#/play" data-route="play">Play</a>
-      <a href="#/openings" data-route="openings">Openings</a>
-      <a href="#/drills" data-route="drills">Drills</a>
-      <a href="#/study" data-route="study">Study</a>
+    <!-- Nav labels, aria-labels and the document title are filled in by
+         main.js from the active language; the markup ships the French
+         default so the bar is never briefly blank. -->
+    <nav aria-label="Navigation principale">
+      <a href="#/play" data-route="play">Jouer</a>
+      <a href="#/openings" data-route="openings">Ouvertures</a>
+      <a href="#/drills" data-route="drills">Exercices</a>
+      <a href="#/study" data-route="study">Étude</a>
     </nav>
-    <button id="theme-toggle" type="button" aria-label="Toggle colour theme" title="Toggle colour theme">◐</button>
+    <div class="header-actions">
+      <button id="lang-toggle" type="button"><span class="on">FR</span> / EN</button>
+      <button id="theme-toggle" type="button">◐</button>
+    </div>
   </header>
 
   <main id="view-root" aria-live="polite"></main>
 
-  <aside id="chat-panel" aria-label="Coach chat"></aside>
+  <aside id="chat-panel" aria-label="Discussion avec le coach"></aside>
 
   <script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"></script>
   <script type="module" src="/static/js/main.js"></script>

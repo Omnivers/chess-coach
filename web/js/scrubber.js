@@ -5,6 +5,10 @@
 // NOT apply here — review is post-game, full disclosure.
 
 import { clamp } from './util.js';
+import { makeT } from './i18n.js';
+import { strings } from './strings/scrubber.js';
+
+const t = makeT(strings);
 
 const CP_CLAMP = 500; // +/- 5 pawns fills the band; beyond that we saturate
 const PAD = 8;
@@ -29,10 +33,10 @@ function timeOf(move) {
 export function createScrubber(root, { onSeek } = {}) {
   root.innerHTML = `
     <canvas id="scrubber-canvas" tabindex="0" role="slider"
-      aria-label="Move timeline: drag or use arrow keys to step through the game"
+      aria-label="${t('timelineAria')}"
       aria-valuemin="0"></canvas>
     <canvas class="scrubber-time-canvas" aria-hidden="true"></canvas>
-    <p class="scrubber-hint">Drag to scrub · ←/→ step a move · Home/End jump to start/end</p>
+    <p class="scrubber-hint">${t('hint')}</p>
   `;
   const evalCanvas = root.querySelector('#scrubber-canvas');
   const timeCanvas = root.querySelector('.scrubber-time-canvas');

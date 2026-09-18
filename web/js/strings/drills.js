@@ -1,0 +1,58 @@
+// Drill runner strings: chrome, status, stats. Drill themes/motifs from the
+// API are data and stay untranslated — see i18n-contract.
+import { plural } from '../i18n.js';
+
+export const strings = {
+  fr: {
+    heading: 'Exercices',
+    boardAria: 'Position de l’exercice',
+    statsAria: 'Statistiques des exercices',
+    statsHeading: 'Cette semaine',
+    statDueNow: 'À réviser maintenant',
+    statDueToday: 'À réviser aujourd’hui',
+    statTotal: 'Total',
+    statRetired: 'Retirés',
+    statRetention7d: 'Rétention à 7 jours',
+    notEnoughGames: 'pas encore assez de parties',
+    statsUnavailable: 'Statistiques indisponibles.',
+    loading: 'Chargement…',
+    loadError: (vars) => `Impossible de charger les exercices : ${vars.message}`,
+    queueLeft: (vars) => `${vars.n} ${plural(vars.n, 'restant', 'restants')}`,
+    sideToMove: (vars) =>
+      `${vars.color === 'white' ? 'Aux Blancs' : 'Aux Noirs'} de jouer${vars.motif ? ' · ' + vars.motif : ''}`,
+    emptyHeading: 'Rien à faire pour le moment.',
+    emptyBody: 'Jouez une partie ou revenez plus tard — les nouveaux exercices sont tirés de vos propres erreurs.',
+    correct: 'Correct.',
+    incorrect: (vars) => `Pas tout à fait — la réponse était ${vars.solution}.`,
+    retired: 'Retiré de la rotation — celui-ci est acquis.',
+    nextDue: (vars) => `Prochaine révision dans ${vars.interval} (répétition ${vars.reps}).`,
+    daysUnit: (vars) => `${vars.n} j`,
+    next: 'Suivant',
+  },
+  en: {
+    heading: 'Drills',
+    boardAria: 'Drill position',
+    statsAria: 'Drill stats',
+    statsHeading: 'This week',
+    statDueNow: 'Due now',
+    statDueToday: 'Due today',
+    statTotal: 'Total',
+    statRetired: 'Retired',
+    statRetention7d: '7-day retention',
+    notEnoughGames: 'not enough games yet',
+    statsUnavailable: 'Stats unavailable.',
+    loading: 'Loading…',
+    loadError: (vars) => `Could not load drills: ${vars.message}`,
+    queueLeft: (vars) => `${vars.n} left`,
+    sideToMove: (vars) =>
+      `${vars.color === 'white' ? 'White' : 'Black'} to move${vars.motif ? ' · ' + vars.motif : ''}`,
+    emptyHeading: 'Nothing due right now.',
+    emptyBody: 'Play a game or come back later — new drills are drawn from your own mistakes.',
+    correct: 'Correct.',
+    incorrect: (vars) => `Not quite — the answer was ${vars.solution}.`,
+    retired: 'Retired from the rotation — you’ve got this one.',
+    nextDue: (vars) => `Next due in ${vars.interval} (rep ${vars.reps}).`,
+    daysUnit: (vars) => `${vars.n}d`,
+    next: 'Next',
+  },
+};

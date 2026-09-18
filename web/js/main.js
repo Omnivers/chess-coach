@@ -2,6 +2,8 @@
 // every route; only the view-root content is swapped.
 
 import { getState, setState, storeTheme } from './state.js';
+import { makeT, getLang, toggleLang, onLangChange, applyLangAttribute } from './i18n.js';
+import { strings } from './strings/app.js';
 import * as playView from './play.js';
 import * as reviewView from './review.js';
 import * as drillsView from './drills.js';
@@ -19,6 +21,8 @@ const ROUTES = [
   { pattern: /^#\/study$/, name: 'study', view: studyView, params: () => ({}) },
   { pattern: /^#\/play$/, name: 'play', view: playView, params: () => ({}) },
 ];
+
+const t = makeT(strings);
 
 let currentView = null;
 let viewRoot = null;
@@ -45,11 +49,59 @@ function initTheme() {
   });
 }
 
+const NAV_KEY = {
+  play: 'navPlay',
+  openings: 'navOpenings',
+  drills: 'navDrills',
+  study: 'navStudy',
+};
+
 function updateNav(routeName) {
   for (const a of document.querySelectorAll('header nav a')) {
     if (a.dataset.route === routeName) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   }
+}
+
+/* Everything outside #view-root that carries a string. The views re-render
+   themselves from their own dictionaries when the route re-runs; this is the
+   shell, which never unmounts and so has to be repainted by hand. */
+function applyShellStrings() {
+  const lang = getLang();
+  document.title = t('docTitle');
+  document.querySelector('header nav')?.setAttribute('aria-label', t('mainNav'));
+  for (const a of document.querySelectorAll('header nav a')) {
+    const key = NAV_KEY[a.dataset.route];
+    if (key) a.textContent = t(key);
+  }
+  const theme = document.getElementById('theme-toggle');
+  if (theme) {
+    theme.setAttribute('aria-label', t('themeToggle'));
+    theme.title = t('themeToggle');
+  }
+  const langBtn = document.getElementById('lang-toggle');
+  if (langBtn) {
+    langBtn.setAttribute('aria-label', t('langToggle'));
+    langBtn.title = t('langToggle');
+    // Both halves are always shown; the active one is the one that is lit.
+    langBtn.innerHTML = lang === 'fr'
+      ? '<span class="on">FR</span> / EN'
+      : 'FR / <span class="on">EN</span>';
+  }
+  document.getElementById('chat-panel')?.setAttribute('aria-label', t('chatPanel'));
+}
+
+function initLang() {
+  applyLangAttribute();
+  applyShellStrings();
+  document.getElementById('lang-toggle')?.addEventListener('click', toggleLang);
+  onLangChange(() => {
+    applyShellStrings();
+    // Views hold no language state of their own — re-running the route
+    // remounts the current one against the new dictionary. Live game state
+    // lives in the store, not in the DOM, so nothing is lost by this.
+    route();
+  });
 }
 
 async function route() {
@@ -73,6 +125,7 @@ async function route() {
 function boot() {
   viewRoot = document.getElementById('view-root');
   initTheme();
+  initLang();
   chat.mount(document.getElementById('chat-panel'));
   window.addEventListener('hashchange', route);
   route();

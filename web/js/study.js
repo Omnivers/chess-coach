@@ -4,30 +4,43 @@
 // mode this view cannot afford.
 
 import { api } from './api.js';
-import { naOr } from './util.js';
+import { naOr, prettyHighlight } from './util.js';
+import { makeT } from './i18n.js';
+import { strings } from './strings/study.js';
 
-const STEP_LABEL_FALLBACK = { drills: 'Drills', game: 'Game', review: 'Review' };
+const t = makeT(strings);
+
+// Called at render time (never frozen at import) so a mid-session language
+// switch — which remounts this view — picks up the new dictionary. Returns
+// null for a key it doesn't know, so the caller can fall back to whatever
+// the server called the step.
+function stepLabel(key) {
+  if (key === 'drills') return t('stepDrills');
+  if (key === 'game') return t('stepGame');
+  if (key === 'review') return t('stepReview');
+  return null;
+}
 
 export async function mount(root) {
   root.innerHTML = `
     <div class="stack">
-      <h1>Today</h1>
+      <h1>${t('pageTitle')}</h1>
       <div class="panel" id="session-panel">
         <div class="session-path" id="session-path"></div>
       </div>
       <div class="panel spread">
         <div>
           <div class="streak-badge" id="streak-value">—</div>
-          <div class="streak-label">Day streak</div>
+          <div class="streak-label">${t('streakLabel')}</div>
         </div>
         <div id="session-summary" class="soft"></div>
       </div>
       <div class="panel stack">
-        <h2>Your profile</h2>
+        <h2>${t('profileHeading')}</h2>
         <div class="stat-grid" id="profile-stats"></div>
       </div>
       <div class="panel stack">
-        <h2>Weakest motifs</h2>
+        <h2>${t('weakestHeading')}</h2>
         <ul class="motif-list" id="weakest-motifs"></ul>
       </div>
     </div>
@@ -51,18 +64,18 @@ async function loadSession(root) {
       path.innerHTML = '';
       const p = document.createElement('p');
       p.className = 'inline-error';
-      p.textContent = `Could not load today's session: ${err.message}`;
+      p.textContent = t('sessionLoadError', { message: err.message });
       path.appendChild(p);
       return;
     }
   }
   streak.textContent = naOr(session.streak);
-  summary.textContent = `${session.drills_done}/${session.drills_total} drills · ${session.reviewed ? 'reviewed' : 'not yet reviewed'}`;
+  summary.textContent = `${session.drills_done}/${session.drills_total} ${t('drillsWord')} · ${session.reviewed ? t('reviewedWord') : t('notYetReviewedWord')}`;
 
   path.innerHTML = '';
   const steps = session.steps && session.steps.length
     ? session.steps
-    : ['drills', 'game', 'review'].map((key) => ({ key, label: STEP_LABEL_FALLBACK[key], done: false }));
+    : ['drills', 'game', 'review'].map((key) => ({ key, label: stepLabel(key), done: false }));
 
   steps.forEach((step, i) => {
     const el = document.createElement('a');
@@ -70,10 +83,13 @@ async function loadSession(root) {
     el.href = hrefForStep(step.key, session);
     const label = document.createElement('span');
     label.className = 'step-label';
-    label.textContent = step.label || STEP_LABEL_FALLBACK[step.key] || step.key;
+    // /session/today names each step in English. The three keys it can send
+    // are known here, so the local translation wins and `step.label` is the
+    // fallback for a step this build hasn't heard of yet.
+    label.textContent = stepLabel(step.key) || step.label || step.key;
     const state = document.createElement('span');
     state.className = 'step-state';
-    state.textContent = step.done ? 'Done' : 'Not yet';
+    state.textContent = step.done ? t('stepDone') : t('stepNotYet');
     el.append(label, state);
     path.appendChild(el);
     if (i < steps.length - 1) {
@@ -101,23 +117,23 @@ async function loadProfile(root) {
     grid.innerHTML = '';
     const p = document.createElement('p');
     p.className = 'inline-error';
-    p.textContent = `Could not load your profile: ${err.message}`;
+    p.textContent = t('profileLoadError', { message: err.message });
     grid.appendChild(p);
     return;
   }
 
   const tiles = [
-    ['Games played', String(profile.games_played)],
-    ['Rating estimate', naOr(profile.rating_estimate, (v) => Math.round(v))],
-    ['ACPL (overall)', naOr(profile.acpl_overall, (v) => v.toFixed(0))],
-    ['ACPL · opening', naOr(profile.acpl_by_phase?.opening, (v) => v.toFixed(0))],
-    ['ACPL · middlegame', naOr(profile.acpl_by_phase?.middlegame, (v) => v.toFixed(0))],
-    ['ACPL · endgame', naOr(profile.acpl_by_phase?.endgame, (v) => v.toFixed(0))],
-    ['Hints per game', naOr(profile.hints_per_game, (v) => v.toFixed(1))],
-    ['Guard fire rate', naOr(profile.guard_fire_rate, (v) => `${(v * 100).toFixed(0)}%`)],
-    ['Blunders <30s', naOr(profile.blunder_rate_under_30s, (v) => `${(v * 100).toFixed(0)}%`)],
-    ['Blunders >120s', naOr(profile.blunder_rate_over_120s, (v) => `${(v * 100).toFixed(0)}%`)],
-    ['Drills due', String(profile.drills_due)],
+    [t('statGamesPlayed'), String(profile.games_played)],
+    [t('statRatingEstimate'), naOr(profile.rating_estimate, (v) => Math.round(v))],
+    [t('statAcplOverall'), naOr(profile.acpl_overall, (v) => v.toFixed(0))],
+    [t('statAcplOpening'), naOr(profile.acpl_by_phase?.opening, (v) => v.toFixed(0))],
+    [t('statAcplMiddlegame'), naOr(profile.acpl_by_phase?.middlegame, (v) => v.toFixed(0))],
+    [t('statAcplEndgame'), naOr(profile.acpl_by_phase?.endgame, (v) => v.toFixed(0))],
+    [t('statHintsPerGame'), naOr(profile.hints_per_game, (v) => v.toFixed(1))],
+    [t('statGuardFireRate'), naOr(profile.guard_fire_rate, (v) => `${(v * 100).toFixed(0)}%`)],
+    [t('statBlunderUnder30'), naOr(profile.blunder_rate_under_30s, (v) => `${(v * 100).toFixed(0)}%`)],
+    [t('statBlunderOver120'), naOr(profile.blunder_rate_over_120s, (v) => `${(v * 100).toFixed(0)}%`)],
+    [t('statDrillsDue'), String(profile.drills_due)],
   ];
   grid.innerHTML = '';
   for (const [label, value] of tiles) {
@@ -133,7 +149,7 @@ async function loadProfile(root) {
     if (value === '—') {
       const cap = document.createElement('span');
       cap.className = 'caption';
-      cap.textContent = 'not enough games yet';
+      cap.textContent = t('naCaption');
       tile.appendChild(cap);
     }
     grid.appendChild(tile);
@@ -144,14 +160,16 @@ async function loadProfile(root) {
   if (!motifs.length) {
     const li = document.createElement('li');
     li.innerHTML = '';
-    li.textContent = 'Not enough games yet to identify a pattern.';
+    li.textContent = t('noMotifsYet');
     motifList.appendChild(li);
     return;
   }
   for (const m of motifs) {
     const li = document.createElement('li');
     const name = document.createElement('span');
-    name.textContent = m.motif;
+    // Raw snake_case off /stats/profile ("hung_piece"); prettyHighlight is
+    // the same lookup review.js uses, so the two lists name a motif alike.
+    name.textContent = prettyHighlight(m.motif);
     const count = document.createElement('span');
     count.className = 'count';
     count.textContent = String(m.count);

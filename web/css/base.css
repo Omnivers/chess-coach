@@ -2,14 +2,36 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { height: 100%; }
+/* The interface face is the grotesk; the serif is asked for by name, by
+   headings only. Setting the whole app in Spectral is what the previous two
+   designs did, and a text serif rendering clock digits, button labels and
+   table rows is most of what made them read as dated rather than elegant. */
 body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
+  letter-spacing: -0.005em;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The lit room. Two very wide radials, fixed so they don't travel with
+   scroll, painted behind everything on a pseudo-element rather than on
+   `body` itself so the grain layer above still composites against them.
+   Weak enough to be invisible as colour and present as depth — a flat
+   single-value ground is the tell of an unfinished interface. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(115ch 70ch at 18% -10%, var(--wash-1), transparent 62%),
+    radial-gradient(90ch 60ch at 100% 8%, var(--wash-2), transparent 58%);
 }
 
 img, svg, canvas { max-width: 100%; display: block; }
@@ -19,7 +41,7 @@ img, svg, canvas { max-width: 100%; display: block; }
    than its own body text and the pages read as one undifferentiated column.
    The uppercase-label treatment still exists — it just has to be asked for
    by name now (.eyebrow), because it is a label, not a heading. */
-h1, h2, h3 { font-family: var(--font-serif); font-weight: 600; line-height: 1.2; margin: 0; }
+h1, h2, h3 { font-family: var(--font-serif); font-weight: 600; line-height: 1.2; margin: 0; letter-spacing: -0.012em; }
 h1 { font-size: var(--text-h1); letter-spacing: -0.01em; }
 h2, .section-title {
   font-family: var(--font-serif);
@@ -57,32 +79,39 @@ a { color: var(--accent); }
 
 button, select, input, textarea { font-family: inherit; color: inherit; }
 
+/* Only transform and background-color move on hover — both compositor
+   cheap. The lift is 1px, which is the whole point: a button that jumps is
+   a button that looks like a demo. */
 button {
   background: var(--paper-raised);
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: -0.005em;
   cursor: pointer;
+  box-shadow: var(--shadow-1);
   transition: border-color var(--duration-fast) var(--ease-out-expo),
+              background-color var(--duration-fast) var(--ease-out-expo),
               transform var(--duration-fast) var(--ease-out-expo);
 }
 button:hover:not(:disabled) {
-  border-color: var(--accent);
+  border-color: color-mix(in oklch, var(--accent) 55%, var(--rule));
   background: var(--paper-high);
+  transform: translateY(-1px);
 }
-button:active:not(:disabled) { transform: translateY(1px); }
-button:disabled { opacity: 0.45; cursor: not-allowed; }
+button:active:not(:disabled) { transform: translateY(0); }
+button:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 button.primary {
   background: var(--accent);
   color: var(--on-accent);
-  border-color: var(--accent);
+  border-color: color-mix(in oklch, var(--accent) 80%, black);
   font-weight: 600;
-  box-shadow: var(--shadow-1);
+  box-shadow: var(--shadow-2);
 }
 button.primary:hover:not(:disabled) {
-  background: color-mix(in oklch, var(--accent) 88%, var(--ink));
-  border-color: color-mix(in oklch, var(--accent) 88%, var(--ink));
+  background: color-mix(in oklch, var(--accent) 90%, var(--ink));
 }
 
 :focus-visible {

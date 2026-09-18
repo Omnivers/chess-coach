@@ -6,6 +6,10 @@ import { api } from './api.js';
 import { createBoard, computeDests, isPromotion } from './board.js';
 import { naOr } from './util.js';
 import { askPromotion } from './promotion.js';
+import { makeT } from './i18n.js';
+import { strings } from './strings/drills.js';
+
+const t = makeT(strings);
 
 let board = null;
 let queue = [];
@@ -18,18 +22,18 @@ export function mount(root) {
   root.innerHTML = `
     <div class="stack">
       <div class="spread">
-        <h1>Drills</h1>
+        <h1>${t('heading')}</h1>
         <span class="queue-counter" id="queue-counter"></span>
       </div>
       <div class="drill-layout">
-        <section class="board-col" aria-label="Drill position">
+        <section class="board-col" aria-label="${t('boardAria')}">
           <div class="drill-side-to-move" id="side-to-move"></div>
           <div id="board-wrap"><div id="drill-board" class="board-surface"></div></div>
           <div id="promotion-picker" hidden></div>
           <div id="drill-feedback"></div>
         </section>
-        <aside class="panel stack" aria-label="Drill stats">
-          <h2>This week</h2>
+        <aside class="panel stack" aria-label="${t('statsAria')}">
+          <h2>${t('statsHeading')}</h2>
           <div class="stat-grid" id="drill-stats"></div>
         </aside>
       </div>
@@ -60,18 +64,18 @@ async function loadStats() {
     const s = await api.get('/drills/stats');
     renderStats(s);
   } catch {
-    els.stats.innerHTML = '<p class="muted">Stats unavailable.</p>';
+    els.stats.innerHTML = `<p class="muted">${t('statsUnavailable')}</p>`;
   }
 }
 
 function renderStats(s) {
   els.stats.innerHTML = '';
   const rows = [
-    ['Due now', String(s.due_now)],
-    ['Due today', String(s.due_today)],
-    ['Total', String(s.total)],
-    ['Retired', String(s.retired)],
-    ['7-day retention', naOr(s.retention_7d, (v) => `${(v * 100).toFixed(0)}%`)],
+    [t('statDueNow'), String(s.due_now)],
+    [t('statDueToday'), String(s.due_today)],
+    [t('statTotal'), String(s.total)],
+    [t('statRetired'), String(s.retired)],
+    [t('statRetention7d'), naOr(s.retention_7d, (v) => `${(v * 100).toFixed(0)}%`)],
   ];
   for (const [label, value] of rows) {
     const tile = document.createElement('div');
@@ -86,7 +90,7 @@ function renderStats(s) {
     if (value === '—') {
       const cap = document.createElement('span');
       cap.className = 'caption';
-      cap.textContent = 'not enough games yet';
+      cap.textContent = t('notEnoughGames');
       tile.appendChild(cap);
     }
     els.stats.appendChild(tile);
@@ -94,14 +98,14 @@ function renderStats(s) {
 }
 
 async function loadQueue() {
-  els.feedback.innerHTML = '<p class="muted">Loading…</p>';
+  els.feedback.innerHTML = `<p class="muted">${t('loading')}</p>`;
   try {
     queue = await api.get('/drills/due?limit=8');
   } catch (err) {
     els.feedback.innerHTML = '';
     const p = document.createElement('p');
     p.className = 'inline-error';
-    p.textContent = `Could not load drills: ${err.message}`;
+    p.textContent = t('loadError', { message: err.message });
     els.feedback.appendChild(p);
     return;
   }
@@ -110,7 +114,7 @@ async function loadQueue() {
 }
 
 function updateCounter() {
-  els.counter.textContent = current ? `${queue.length + 1} left` : '0 left';
+  els.counter.textContent = t('queueLeft', { n: current ? queue.length + 1 : 0 });
 }
 
 function next() {
@@ -124,7 +128,7 @@ function next() {
   const color = current.side_to_move === 'black' ? 'black' : 'white';
   board.setOrientation(color);
   board.setPosition({ fen: current.fen, turnColor: color, movableColor: color, dests: computeDests(currentChess) });
-  els.sideToMove.textContent = `${color === 'white' ? 'White' : 'Black'} to move${current.motif ? ' · ' + current.motif : ''}`;
+  els.sideToMove.textContent = t('sideToMove', { color, motif: current.motif || '' });
   els.feedback.innerHTML = '';
   shownAt = Date.now();
 }
@@ -135,8 +139,8 @@ function showEmptyState() {
   els.feedback.innerHTML = `
     <div class="empty-state">
       <div class="glyph">✓</div>
-      <p>Nothing due right now.</p>
-      <p class="muted">Play a game or come back later — new drills are drawn from your own mistakes.</p>
+      <p>${t('emptyHeading')}</p>
+      <p class="muted">${t('emptyBody')}</p>
     </div>
   `;
 }
@@ -172,17 +176,17 @@ function showFeedback(resp) {
   const wrap = document.createElement('div');
   wrap.className = `drill-feedback ${resp.correct ? 'correct' : 'incorrect'}`;
   const headline = document.createElement('p');
-  headline.textContent = resp.correct ? 'Correct.' : `Not quite — the answer was ${resp.solution_uci}.`;
+  headline.textContent = resp.correct ? t('correct') : t('incorrect', { solution: resp.solution_uci });
   wrap.appendChild(headline);
   const schedule = document.createElement('p');
   schedule.className = 'schedule';
   schedule.textContent = resp.retired
-    ? 'Retired from the rotation — you’ve got this one.'
-    : `Next due in ${naOr(resp.interval_days, (v) => `${v}d`)} (rep ${resp.reps}).`;
+    ? t('retired')
+    : t('nextDue', { interval: naOr(resp.interval_days, (v) => t('daysUnit', { n: v })), reps: resp.reps });
   wrap.appendChild(schedule);
   const nextBtn = document.createElement('button');
   nextBtn.className = 'primary';
-  nextBtn.textContent = 'Next';
+  nextBtn.textContent = t('next');
   nextBtn.style.marginTop = 'var(--space-2)';
   nextBtn.addEventListener('click', next);
   els.feedback.innerHTML = '';

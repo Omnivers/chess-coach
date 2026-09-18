@@ -61,12 +61,21 @@ cg-board {
   background-size: 25% 25%;
 }
 
+/* Interaction is gold, on purpose and everywhere: the square you picked up
+   from, the square you can go to, the square you just came from. Gold is
+   the one warm hue in a cool palette, so it separates from both board
+   colours by hue as well as by value — which is the only way a marker can
+   be legible on porcelain and on steel blue at the same time.
+
+   The dest dots used to be near-black at 22% alpha, inherited from a board
+   whose dark squares were light brown. Against oklch(50%) blue that dot was
+   a value-on-value smudge: technically drawn, not actually visible. */
 cg-board square.last-move {
-  background-color: oklch(78% 0.11 95 / 55%);
+  background-color: oklch(80% 0.115 85 / 45%);
 }
 
 cg-board square.selected {
-  background-color: oklch(78% 0.11 95 / 70%);
+  background-color: oklch(80% 0.130 85 / 68%);
 }
 
 cg-board square.check {
@@ -75,20 +84,22 @@ cg-board square.check {
 }
 
 cg-board square.move-dest {
-  background: radial-gradient(oklch(22% 0.02 60 / 22%) 19%, oklch(0% 0 0 / 0%) 20%);
+  background: radial-gradient(oklch(76% 0.130 85 / 62%) 19%, oklch(0% 0 0 / 0%) 20%);
   pointer-events: auto;
 }
 
 cg-board square.premove-dest {
-  background: radial-gradient(oklch(48% 0.1 250 / 22%) 19%, oklch(0% 0 0 / 0%) 20%);
+  background: radial-gradient(oklch(62% 0.120 265 / 55%) 19%, oklch(0% 0 0 / 0%) 20%);
 }
 
+/* `.oc` is "occupied" — a capture. A ring around the piece instead of a dot
+   under it, so the piece stays readable. */
 cg-board square.oc.move-dest {
-  background: radial-gradient(transparent 0%, transparent 79%, oklch(22% 0.02 60 / 22%) 80%);
+  background: radial-gradient(transparent 0%, transparent 76%, oklch(76% 0.130 85 / 75%) 77%);
 }
 
 cg-board square.current-premove {
-  background-color: oklch(70% 0.14 75 / 55%);
+  background-color: oklch(62% 0.120 265 / 50%);
 }
 
 /* chessground's stock coordinates are positioned for lichess's layout, which
@@ -98,10 +109,16 @@ cg-board square.current-premove {
    ranks start above the top one. Our board has no outside margin — it is
    framed and clipped — so the h-file letter and the top of the rank column
    were being sliced off. Put both inside the board instead. */
+/* Coordinates sit *inside* the board, so they land on porcelain and on
+   steel blue depending on the file. A single token colour can only be
+   right for one of the two; dark type with a light halo is right for
+   both, and doesn't need to know the board's orientation. */
 coords {
-  color: var(--ink-faint);
+  color: oklch(26% 0.02 255 / 0.82);
+  text-shadow: 0 0 2px oklch(100% 0 0 / 0.5);
   font-family: var(--font-mono);
   font-size: 0.6rem;
+  font-weight: 600;
 }
 
 .cg-wrap coords.ranks { top: 0; left: 3px; }

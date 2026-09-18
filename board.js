@@ -22,33 +22,6 @@ export function computeDests(chess) {
   return dests;
 }
 
-// Rendered top-to-bottom / left-to-right for a board seen from White.
-// Flipping is a flex-direction swap driven by [data-orientation] in the CSS,
-// so the label order never has to be recomputed.
-const FILE_LABELS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-const RANK_LABELS = ['8', '7', '6', '5', '4', '3', '2', '1'];
-
-// Fills the two gutters that `.board-frame` reserves around the board and
-// returns a setter for the orientation flip. Returns null when a view mounts
-// a board without the surrounding frame markup — the board still works, it
-// just has no coordinates, which is better than throwing.
-function mountCoords(el, orientation) {
-  const frame = el.closest('.board-frame');
-  const ranks = frame?.querySelector('.board-ranks');
-  const files = frame?.querySelector('.board-files');
-  if (!ranks || !files) return null;
-  const cell = (text) => {
-    const span = document.createElement('span');
-    span.textContent = text;
-    return span;
-  };
-  ranks.replaceChildren(...RANK_LABELS.map(cell));
-  files.replaceChildren(...FILE_LABELS.map(cell));
-  const apply = (o) => { frame.dataset.orientation = o; };
-  apply(orientation);
-  return apply;
-}
-
 export function createBoard(el, { orientation = 'white', onUserMove } = {}) {
   const board = Chessground(el, {
     // Inert until a game exists — a drag before that would POST to
@@ -70,12 +43,6 @@ export function createBoard(el, { orientation = 'white', onUserMove } = {}) {
     draggable: { enabled: true },
     selectable: { enabled: true },
     highlight: { lastMove: true, check: true },
-    // Off: chessground draws its coordinates inside the a-file and the first
-    // rank, where each label sits on porcelain or on steel blue depending on
-    // the square under it. No single colour is legible on both, in either
-    // theme. We render them in gutters outside the frame instead — see
-    // mountCoords below and .board-ranks / .board-files in board.css.
-    coordinates: false,
     animation: { enabled: true, duration: 200 },
     drawable: {
       enabled: true,
@@ -87,8 +54,6 @@ export function createBoard(el, { orientation = 'white', onUserMove } = {}) {
       },
     },
   });
-
-  const applyCoordOrientation = mountCoords(el, orientation);
 
   function setInert() {
     board.set({ viewOnly: true, movable: { color: undefined, dests: new Map() } });
@@ -121,7 +86,6 @@ export function createBoard(el, { orientation = 'white', onUserMove } = {}) {
 
   function setOrientation(orientation) {
     board.set({ orientation });
-    applyCoordOrientation?.(orientation);
   }
 
   function destroy() {

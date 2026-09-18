@@ -23,91 +23,13 @@
    than its own frame and `overflow: hidden` sliced the h-file off. */
 #board-wrap {
   box-sizing: border-box;
-  grid-area: board;
-  width: 100%;
+  width: min(100%, 640px, calc(100svh - 170px));
+  margin: 0 auto;
   border-radius: var(--radius-md);
-  border: var(--board-frame-w) solid color-mix(in oklch, var(--board-dark) 82%, black);
+  border: 3px solid color-mix(in oklch, var(--board-dark) 82%, black);
   box-shadow: var(--shadow-2);
   overflow: hidden;
 }
-
-/* The board plus its two coordinate gutters, as one grid. Sizing moved here
-   from #board-wrap: the board is still the thing being capped, so the cap
-   carries the gutter width with it and the squares keep the dimensions they
-   had before the gutters existed.
-
-   `minmax(0, auto)` on the board column rather than `auto` — a grid item's
-   automatic minimum size is its content size, and .board-surface's
-   aspect-ratio makes that content taller than the cap at narrow widths,
-   which pushes the board back out past its own column. */
-.board-frame {
-  --coord-gutter: 1.35rem;
-  /* Shared with #board-wrap's border so the gutters can inset by exactly the
-     frame width. Without that inset each gutter spans the board's border box
-     while the squares span its padding box, and the labels drift up to a
-     border's width out of true by the time they reach the far edge. */
-  --board-frame-w: 3px;
-  display: grid;
-  grid-template-columns: var(--coord-gutter) minmax(0, 1fr);
-  grid-template-rows: minmax(0, auto) var(--coord-gutter);
-  grid-template-areas:
-    "ranks board"
-    ".     files";
-  align-items: stretch;
-  width: min(100%, calc(640px + var(--coord-gutter)), calc(100svh - 170px));
-  margin: 0 auto;
-}
-
-/* Outside the frame, on --paper, so one token is legible in both themes:
-   --ink-soft is oklch(46%) on light paper and oklch(79%) on dark. Inside the
-   board no such colour exists, which is the whole reason these moved out.
-   Tabular mono at label weight, matching the clocks and the move list —
-   coordinates are reference marks, so they read as the same kind of object. */
-.board-ranks,
-.board-files {
-  display: flex;
-  color: var(--ink-soft);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  font-variant-numeric: tabular-nums;
-  user-select: none;
-}
-
-.board-ranks {
-  grid-area: ranks;
-  flex-direction: column;
-  padding: var(--board-frame-w) 0.35em var(--board-frame-w) 0;
-}
-
-.board-files {
-  grid-area: files;
-  flex-direction: row;
-  padding: 0.3em var(--board-frame-w) 0;
-  text-transform: uppercase;
-}
-
-/* Each label owns exactly one square's worth of the edge and centres in it,
-   so a letter lines up with its file however wide the board has been capped.
-   `flex: 1` alone is not enough — the default `min-height: auto` lets a cell
-   grow past its eighth when the gutter is short. */
-.board-ranks > span,
-.board-files > span {
-  flex: 1 1 0;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.board-ranks > span { justify-content: flex-end; }
-
-/* Flipping the board flips the gutters; the labels themselves are never
-   re-ordered in JS. */
-.board-frame[data-orientation="black"] .board-ranks { flex-direction: column-reverse; }
-.board-frame[data-orientation="black"] .board-files { flex-direction: row-reverse; }
 
 /* Every view mounts chessground into `#board-wrap > .board-surface`.
    This used to be `#board`, the play view's id — so the review and drill
@@ -179,6 +101,28 @@ cg-board square.oc.move-dest {
 cg-board square.current-premove {
   background-color: oklch(62% 0.120 265 / 50%);
 }
+
+/* chessground's stock coordinates are positioned for lichess's layout, which
+   leaves a margin *outside* the board for them: `coords.ranks` sits at
+   `top: -20px` and `coords.files` at `left: 24px; bottom: -4px` with
+   `width: 100%`, so the file letters run 24px past the right edge and the
+   ranks start above the top one. Our board has no outside margin — it is
+   framed and clipped — so the h-file letter and the top of the rank column
+   were being sliced off. Put both inside the board instead. */
+/* Coordinates sit *inside* the board, so they land on porcelain and on
+   steel blue depending on the file. A single token colour can only be
+   right for one of the two; dark type with a light halo is right for
+   both, and doesn't need to know the board's orientation. */
+coords {
+  color: oklch(26% 0.02 255 / 0.82);
+  text-shadow: 0 0 2px oklch(100% 0 0 / 0.5);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+
+.cg-wrap coords.ranks { top: 0; left: 3px; }
+.cg-wrap coords.files { bottom: 0; left: 0; }
 
 /* our own drawn shapes (hint highlights / arrows) inherit currentColor from
    the brush definitions set in board.js; nothing to override here. */

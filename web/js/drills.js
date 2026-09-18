@@ -28,7 +28,7 @@ export function mount(root) {
       <div class="drill-layout">
         <section class="board-col" aria-label="${t('boardAria')}">
           <div class="drill-side-to-move" id="side-to-move"></div>
-          <div id="board-wrap"><div id="drill-board" class="board-surface"></div></div>
+          <div class="board-frame"><div id="board-wrap"><div id="drill-board" class="board-surface"></div></div><div class="board-ranks" aria-hidden="true"></div><div class="board-files" aria-hidden="true"></div></div>
           <div id="promotion-picker" hidden></div>
           <div id="drill-feedback"></div>
         </section>

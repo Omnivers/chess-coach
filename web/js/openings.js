@@ -34,7 +34,7 @@ export function mount(root) {
         <div class="cluster" id="line-picker" role="group" aria-label="${t('chooseLineAria')}"></div>
         <div class="openings-layout" id="openings-layout">
           <section class="board-col" aria-label="${t('boardAria')}">
-            <div id="board-wrap"><div id="openings-board" class="board-surface"></div></div>
+            <div class="board-frame"><div id="board-wrap"><div id="openings-board" class="board-surface"></div></div><div class="board-ranks" aria-hidden="true"></div><div class="board-files" aria-hidden="true"></div></div>
             <p class="openings-subtitle" id="line-subtitle"></p>
             <div class="panel stack note-panel" aria-live="polite">
               <h2>${t('thisMoveHeading')}</h2>

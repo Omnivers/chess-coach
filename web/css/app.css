@@ -160,7 +160,7 @@ main {
    that you leave and come back wanting to see where you were — but it is
    plainly out of play: desaturated and stepped back. No text is baked in
    here; the prose under the board says it, in whichever language is on. */
-.board-col.is-paused #board-wrap {
+.board-col.is-paused .board-frame {
   filter: grayscale(0.8) contrast(0.92);
   opacity: 0.68;
   transition: filter var(--duration-normal) var(--ease-out-expo),

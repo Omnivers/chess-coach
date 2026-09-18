@@ -31,7 +31,7 @@ export function mount(root, params) {
   root.innerHTML = `
     <div class="review-layout">
       <section class="board-col" aria-label="${t('positionAria')}">
-        <div id="board-wrap"><div id="review-board" class="board-surface"></div></div>
+        <div class="board-frame"><div id="board-wrap"><div id="review-board" class="board-surface"></div></div><div class="board-ranks" aria-hidden="true"></div><div class="board-files" aria-hidden="true"></div></div>
         <div class="review-controls">
           <button id="rev-first" title="${t('firstTitle')}" aria-label="${t('firstTitle')}">⏮</button>
           <button id="rev-prev" title="${t('prevTitle')}" aria-label="${t('prevTitle')}">◀</button>

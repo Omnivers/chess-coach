@@ -83,7 +83,7 @@ export function mount(root) {
       <div class="panel game-controls" id="game-controls"></div>
     </section>
     <section class="board-col" aria-label="${t('board')}">
-      <div id="board-wrap"><div id="board" class="board-surface"></div></div>
+      <div class="board-frame"><div id="board-wrap"><div id="board" class="board-surface"></div></div><div class="board-ranks" aria-hidden="true"></div><div class="board-files" aria-hidden="true"></div></div>
       <div class="board-message" id="board-message" role="status" aria-live="polite"></div>
       <div id="promotion-picker" hidden></div>
       <div id="guard-slot"></div>

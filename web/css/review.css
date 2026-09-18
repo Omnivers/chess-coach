@@ -1,0 +1,77 @@
+/* #/review — playback, scrubber, highlights-before-mistakes. */
+
+.review-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(360px, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+/* Container, not viewport: the chat dock narrows the content box
+   without narrowing the window (see app.css `main`). 660px is this
+   grid's min-content width (260 + 360 + a 2rem gap). */
+@container view (max-width: 660px) {
+  .review-layout { grid-template-columns: 1fr; }
+}
+
+.review-summary {
+  font-size: 0.95rem;
+  line-height: 1.65;
+}
+.review-summary p:first-child { margin-top: 0; }
+
+.review-stats { display: flex; gap: var(--space-5); }
+.review-stats .stat { display: flex; flex-direction: column; }
+.review-stats .stat .value { font-family: var(--font-mono); font-size: 1.4rem; }
+.review-stats .stat .label { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+
+#scrubber-wrap { width: 100%; }
+#scrubber-canvas {
+  width: 100%;
+  height: 140px;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+#scrubber-canvas:active { cursor: grabbing; }
+.scrubber-time-canvas {
+  width: 100%;
+  height: 22px;
+  display: block;
+  margin-top: 2px;
+}
+.scrubber-hint { font-size: 0.72rem; color: var(--ink-faint); text-align: center; margin-top: var(--space-1); }
+
+.review-list-block { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.highlight-item, .mistake-item {
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+.highlight-item { border-left: 3px solid var(--good); }
+.mistake-item.severity-inaccuracy { border-left: 3px solid var(--warn); }
+.mistake-item.severity-mistake { border-left: 3px solid var(--warn); }
+.mistake-item.severity-blunder { border-left: 3px solid var(--bad); }
+
+.review-list-block .item-head { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-2); }
+.review-list-block .item-head .san { font-family: var(--font-mono); font-weight: 600; }
+.review-list-block .item-detail {
+  margin-top: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  display: none;
+}
+.review-list-block .item-detail.open { display: block; }
+.review-list-block .pv { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); }
+
+.review-controls { display: flex; justify-content: center; gap: var(--space-2); }
+
+.pgn-link {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-decoration: none;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+}

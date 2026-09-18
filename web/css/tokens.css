@@ -1,0 +1,92 @@
+/* Design tokens — "the study". Warm paper by default; a walnut/tobacco
+   dark variant, never a grey SaaS dark mode. Colour is semantic only:
+   good/warn/bad map to move quality, accent marks "the engine spoke". */
+
+:root {
+  --paper:        oklch(96% 0.012 85);
+  --paper-raised: oklch(98% 0.008 85);
+  --ink:          oklch(22% 0.02 60);
+  --ink-soft:     oklch(46% 0.02 60);
+  --ink-faint:    oklch(66% 0.015 60);
+  --rule:         oklch(88% 0.012 75);
+  --board-light:  oklch(88% 0.035 80);
+  --board-dark:   oklch(52% 0.055 55);
+  --good:         oklch(55% 0.13 150);
+  --warn:         oklch(70% 0.14 75);
+  --bad:          oklch(55% 0.17 25);
+  --accent:       oklch(48% 0.10 250);
+
+  /* on-color text for filled badges */
+  --on-good:  oklch(98% 0.01 150);
+  --on-warn:  oklch(20% 0.02 75);
+  --on-bad:   oklch(98% 0.01 25);
+  --on-accent: oklch(98% 0.01 250);
+
+  --shadow-color: 60 8% 20%;
+
+  /* type */
+  --font-serif: 'Spectral', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* rhythm — deliberately uneven, not a uniform 8px grid */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.85rem;
+  --space-4: 1.25rem;
+  --space-5: 2rem;
+  --space-6: 3.25rem;
+
+  --radius-sm: 3px;
+  --radius-md: 6px;
+
+  --duration-fast: 120ms;
+  --duration-normal: 240ms;
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Dark: walnut/tobacco ground, cream ink — never neutral grey. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper:        oklch(24% 0.018 55);
+    --paper-raised: oklch(28% 0.02 55);
+    --ink:          oklch(92% 0.012 85);
+    --ink-soft:     oklch(76% 0.014 80);
+    --ink-faint:    oklch(56% 0.012 75);
+    --rule:         oklch(36% 0.02 55);
+    --board-light:  oklch(46% 0.045 70);
+    --board-dark:   oklch(27% 0.05 50);
+    --good:         oklch(72% 0.15 150);
+    --warn:         oklch(80% 0.15 80);
+    --bad:          oklch(70% 0.18 27);
+    --accent:       oklch(75% 0.12 250);
+
+    --on-good:  oklch(18% 0.02 150);
+    --on-warn:  oklch(18% 0.02 80);
+    --on-bad:   oklch(18% 0.02 27);
+    --on-accent: oklch(15% 0.02 250);
+
+    --shadow-color: 55 20% 4%;
+  }
+}
+
+:root[data-theme="dark"] {
+  --paper:        oklch(24% 0.018 55);
+  --paper-raised: oklch(28% 0.02 55);
+  --ink:          oklch(92% 0.012 85);
+  --ink-soft:     oklch(76% 0.014 80);
+  --ink-faint:    oklch(56% 0.012 75);
+  --rule:         oklch(36% 0.02 55);
+  --board-light:  oklch(46% 0.045 70);
+  --board-dark:   oklch(27% 0.05 50);
+  --good:         oklch(72% 0.15 150);
+  --warn:         oklch(80% 0.15 80);
+  --bad:          oklch(70% 0.18 27);
+  --accent:       oklch(75% 0.12 250);
+
+  --on-good:  oklch(18% 0.02 150);
+  --on-warn:  oklch(18% 0.02 80);
+  --on-bad:   oklch(18% 0.02 27);
+  --on-accent: oklch(15% 0.02 250);
+
+  --shadow-color: 55 20% 4%;
+}

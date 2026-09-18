@@ -1,0 +1,97 @@
+/* The coach rail — the pedagogical heart of #/play.
+   Order enforced in rail.js: process prompt -> hint ladder -> feedback. */
+
+.rail { display: flex; flex-direction: column; gap: var(--space-4); }
+
+.rail-section h2 { margin-bottom: var(--space-2); }
+
+.process-prompt {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.process-prompt li {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+.process-prompt input[type="checkbox"] {
+  margin-top: 0.2em;
+  accent-color: var(--accent);
+}
+.process-prompt li.checked { color: var(--ink-faint); text-decoration: line-through; }
+
+.phase-marker {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+.hint-ladder { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.hint-credits {
+  display: flex;
+  gap: 0.3em;
+  font-size: 0.9rem;
+}
+.hint-credits .dot { color: var(--accent); }
+.hint-credits .dot.spent { color: var(--rule); }
+
+.hint-tier {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  text-align: left;
+  background: var(--paper);
+}
+.hint-tier .tier-name { font-weight: 600; font-size: 0.82rem; }
+.hint-tier .tier-cost { font-size: 0.72rem; color: var(--ink-faint); font-family: var(--font-mono); }
+.hint-tier:disabled .tier-name { color: var(--ink-faint); }
+
+.hint-response {
+  border-left: 2px solid var(--accent);
+  padding: var(--space-2) var(--space-3);
+  background: color-mix(in oklch, var(--accent) 6%, var(--paper));
+  font-size: 0.88rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.hint-response .motif { font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent); }
+
+.feedback-card { display: flex; flex-direction: column; gap: var(--space-2); }
+.feedback-card .motif-list { display: flex; gap: var(--space-1); flex-wrap: wrap; }
+
+.guard-confirm {
+  border: 1px solid color-mix(in oklch, var(--warn) 50%, var(--rule));
+  background: color-mix(in oklch, var(--warn) 12%, var(--paper-raised));
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 0.88rem;
+}
+.guard-confirm .actions { display: flex; gap: var(--space-2); justify-content: flex-end; }
+.guard-confirm button.look-again { border-color: var(--accent); color: var(--accent); }
+.guard-confirm button.play-anyway { color: var(--ink-soft); }
+
+.time-budget {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hint-response, .guard-confirm { animation: rail-in var(--duration-normal) var(--ease-out-expo); }
+}
+@keyframes rail-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

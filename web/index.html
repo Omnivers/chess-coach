@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chess Coach</title>
+  <meta name="color-scheme" content="light dark" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=JetBrains+Mono:wght@400;600&display=swap"
+  />
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9.1.1/assets/chessground.base.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chessground@9.1.1/assets/chessground.cburnett.css" />
+
+  <link rel="stylesheet" href="/static/css/tokens.css" />
+  <link rel="stylesheet" href="/static/css/base.css" />
+  <link rel="stylesheet" href="/static/css/board.css" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+  <link rel="stylesheet" href="/static/css/rail.css" />
+  <link rel="stylesheet" href="/static/css/review.css" />
+  <link rel="stylesheet" href="/static/css/drills.css" />
+  <link rel="stylesheet" href="/static/css/chat.css" />
+
+  <script>
+    // Applied before first paint to avoid a light->dark flash; main.js takes
+    // over theme handling (and re-applies the same value) once it boots.
+    (function () {
+      try {
+        var t = localStorage.getItem('chess-coach-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {
+        // localStorage unavailable — fall back to prefers-color-scheme only.
+      }
+    })();
+  </script>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <header>
+    <h1>Chess Coach</h1>
+    <nav aria-label="Main navigation">
+      <a href="#/play" data-route="play">Play</a>
+      <a href="#/drills" data-route="drills">Drills</a>
+      <a href="#/study" data-route="study">Study</a>
+    </nav>
+    <button id="theme-toggle" type="button" aria-label="Toggle colour theme" title="Toggle colour theme">◐</button>
+  </header>
+
+  <main id="view-root" aria-live="polite"></main>
+
+  <aside id="chat-panel" aria-label="Coach chat"></aside>
+
+  <script src="https://cdn.jsdelivr.net/npm/chess.js@0.10.3/chess.min.js"></script>
+  <script type="module" src="/static/js/main.js"></script>
+</body>
+</html>

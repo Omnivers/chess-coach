@@ -1,0 +1,65 @@
+/* #/drills and #/study */
+
+.drills-head { display: flex; justify-content: space-between; align-items: baseline; }
+.queue-counter { font-family: var(--font-mono); color: var(--ink-soft); font-size: 0.85rem; }
+
+.drill-layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 1fr) minmax(240px, 300px);
+  gap: var(--space-5);
+  align-items: start;
+}
+/* Container, not viewport — see app.css `main`. 640px is this grid's
+   min-content width (360 + 240 + a 2rem gap). */
+@container view (max-width: 640px) { .drill-layout { grid-template-columns: 1fr; } }
+
+.drill-side-to-move { text-align: center; font-size: 0.82rem; color: var(--ink-soft); }
+
+.drill-feedback { text-align: center; font-size: 1rem; font-weight: 600; }
+.drill-feedback.correct { color: var(--good); }
+.drill-feedback.incorrect { color: var(--bad); }
+.drill-feedback .solution { font-family: var(--font-mono); font-size: 0.85rem; color: var(--ink-soft); font-weight: 400; margin-top: var(--space-1); }
+.drill-feedback .schedule { font-size: 0.78rem; color: var(--ink-faint); font-weight: 400; margin-top: var(--space-1); }
+
+/* --- study --- */
+.session-path {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
+.session-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  position: relative;
+}
+.session-step.done { border-color: color-mix(in oklch, var(--good) 45%, var(--rule)); }
+.session-step .step-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+.session-step .step-state { font-family: var(--font-mono); font-size: 0.85rem; }
+.session-step.done .step-state { color: var(--good); }
+.session-connector { flex: 0 0 var(--space-4); height: 1px; background: var(--rule); }
+
+.streak-badge {
+  font-family: var(--font-mono);
+  font-size: 1.6rem;
+}
+.streak-label { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-4);
+}
+.stat-tile { display: flex; flex-direction: column; gap: 0.15em; }
+.stat-tile .value { font-family: var(--font-mono); font-size: 1.5rem; }
+.stat-tile .value.na { color: var(--ink-faint); font-size: 1.2rem; }
+.stat-tile .label { font-size: 0.72rem; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-tile .caption { font-size: 0.72rem; color: var(--ink-faint); font-style: italic; }
+
+.motif-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.motif-list li { display: flex; justify-content: space-between; font-size: 0.85rem; }
+.motif-list .count { font-family: var(--font-mono); color: var(--ink-faint); }

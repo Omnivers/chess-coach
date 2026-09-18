@@ -1,0 +1,7 @@
+chess>=1.11
+pytest>=9.0
+httpx>=0.28
+fastapi>=0.141
+pydantic>=2.13
+# Defer uvicorn install until Phase 2 (server runtime). Listed for visibility.
+# uvicorn>=0.30

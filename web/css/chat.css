@@ -1,0 +1,148 @@
+/* The Hermes chat — terminal aesthetic within the study palette.
+   Docked right on desktop, a bottom sheet on mobile. Never a black
+   rectangle: same paper/ink as the rest, mono type, a `>` prompt glyph. */
+
+#chat-panel {
+  position: fixed;
+  top: 60px;
+  right: 0;
+  bottom: 0;
+  width: 340px;
+  max-width: 100vw;
+  background: var(--paper-raised);
+  border-left: 1px solid var(--rule);
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  transition: transform var(--duration-normal) var(--ease-out-expo);
+}
+#chat-panel[data-collapsed="true"] { transform: translateX(calc(100% - 42px)); }
+
+/* The panel is fixed, so it takes no space in flow — without this the
+   document runs underneath it and the play view's right-hand coaching
+   rail disappears behind the chat. Reserve the dock width on <body> and
+   let it shrink to the collapsed tab, so the layout reflows rather than
+   overlapping. `right: 0` is viewport-relative, so the panel still sits
+   flush in the gutter this opens. */
+@media (min-width: 768px) {
+  body {
+    padding-right: 340px;
+    transition: padding-right var(--duration-normal) var(--ease-out-expo);
+  }
+  body:has(#chat-panel[data-collapsed="true"]) { padding-right: 42px; }
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--rule);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.chat-head .dot {
+  width: 0.5em; height: 0.5em; border-radius: 999px;
+  display: inline-block; margin-right: 0.5em;
+  background: var(--ink-faint);
+}
+.chat-head .dot.online { background: var(--good); }
+.chat-head .dot.offline { background: var(--bad); }
+
+/* Collapsed, only a 42px strip of the panel is on screen — the rest is
+   translated off to the right. Without this the strip just shows the
+   left 42px of the panel's contents ("He", a clipped line of the log).
+   Stack the head instead so the strip reads as a labelled tab: toggle on
+   top, "HERMES" set vertically beneath it, everything else hidden. */
+#chat-panel[data-collapsed="true"] .chat-log,
+#chat-panel[data-collapsed="true"] .chat-composer {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast) linear;
+}
+#chat-panel[data-collapsed="true"] .chat-head {
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  border-bottom: none;
+  padding: var(--space-2) 0;
+  width: 42px;
+}
+#chat-panel[data-collapsed="true"] .chat-title {
+  writing-mode: vertical-rl;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+}
+#chat-panel[data-collapsed="true"] .chat-head .dot { margin: 0 0 0.6em 0; }
+
+#chat-toggle {
+  font-family: var(--font-mono);
+  padding: var(--space-1) var(--space-2);
+}
+
+.chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.55;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.chat-line { white-space: pre-wrap; word-break: break-word; }
+.chat-line .role { color: var(--ink-faint); }
+.chat-line.user .role::before { content: "› "; color: var(--accent); }
+.chat-line.assistant .role::before { content: "› "; color: var(--good); }
+.chat-line .role { display: block; margin-bottom: 0.15em; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; }
+.chat-line .text { color: var(--ink); }
+
+.chat-notice {
+  color: var(--ink-soft);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  padding: var(--space-3);
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius-sm);
+}
+
+.chat-composer {
+  border-top: 1px solid var(--rule);
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  flex-shrink: 0;
+}
+.chat-composer textarea {
+  flex: 1;
+  resize: none;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  min-height: 2.4em;
+  max-height: 8em;
+}
+.chat-composer button { align-self: flex-end; }
+
+@media (max-width: 767px) {
+  #chat-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: 60vh;
+    border-left: none;
+    border-top: 1px solid var(--rule);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+  }
+  #chat-panel[data-collapsed="true"] { transform: translateY(calc(100% - 42px)); }
+}

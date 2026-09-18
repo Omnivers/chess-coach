@@ -1,0 +1,23 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+data/*.db
+data/*.db-*
+*.egg-info/
+.DS_Store
+.env
+*.env
+!tests/fixtures/
+
+# runtime artefacts
+data/server.log
+data/*.log
+web/.cache/
+
+# never commit secrets
+.env.*
+!.env.example
+secrets.json
+*.pem
+*.key

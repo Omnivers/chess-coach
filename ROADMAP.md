@@ -386,6 +386,11 @@ The fixed spine for a returning player, in order:
    convert games you're currently drawing or losing. Highest return per hour in all of chess.
 5. **Piece activity over material** — when a pawn is worth giving.
 6. **Opening principles** — centre, development, king safety. Not lines. §4 handles lines.
+   The static primer content exists (`chess_coach/openings.py`, `GET /openings/primer`,
+   `#/openings`) — five principles and four illustrative lines, hand-curated and
+   engine-free. What's still missing is the lesson wrapper itself: this isn't wired into
+   the FSRS queue or gated on error-profile need like the rest of §5.3, so it's a
+   standalone reference page today, not yet a generated lesson.
 
 Each lesson ends by inserting its positions into the FSRS queue. **Tutorials and drills
 are the same system**; a lesson you don't get resurfaced is a lesson you didn't learn.

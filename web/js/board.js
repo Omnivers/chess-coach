@@ -25,11 +25,20 @@ export function computeDests(chess) {
 export function createBoard(el, { orientation = 'white', onUserMove } = {}) {
   const board = Chessground(el, {
     // Inert until a game exists — a drag before that would POST to
-    // /play/null/move and 404.
+    // /play/null/move and 404. Inertness comes from `movable.color:
+    // undefined` + empty dests, NOT from `viewOnly`: chessground's
+    // `bindBoard` bails out with `if (state.viewOnly) return;` before it
+    // attaches its mousedown/touchstart listeners, and those listeners are
+    // only ever bound once, at construction. A board born `viewOnly: true`
+    // therefore stays permanently deaf to the mouse even after a later
+    // `set({ viewOnly: false })` — which is exactly how pieces became
+    // unmovable. Toggling `viewOnly` at runtime is still fine (the bound
+    // handler re-reads it on every event); only the constructor value is
+    // load-bearing.
     fen: '8/8/8/8/8/8/8/8 w - - 0 1',
     orientation,
     turnColor: 'white',
-    viewOnly: true,
+    viewOnly: false,
     movable: { free: false, color: undefined, dests: new Map() },
     draggable: { enabled: true },
     selectable: { enabled: true },

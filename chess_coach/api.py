@@ -23,6 +23,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .api_coach import build_router as build_coach_router
 from .api_drills import build_router as build_drills_router
+from .api_openings import build_router as build_openings_router
 from .api_play import build_router as build_play_router
 from .api_review import build_router as build_review_router
 from .api_session import build_router as build_session_router
@@ -136,6 +137,7 @@ def create_app(
     app.include_router(build_coach_router(j, eng_pool, live_games))
     app.include_router(build_drills_router(j))
     app.include_router(build_session_router(j))
+    app.include_router(build_openings_router())
 
     # Mount last: an explicit route (like "/") always wins over a mount at
     # the same prefix, but keeping this after the routers makes the

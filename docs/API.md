@@ -329,7 +329,17 @@ POST /play/new
     time_control: "15+10"|"10+5"|"5+3"|"3+2"|"unlimited" }
   -> { game_id, fen, user_color, engine_color, ply, is_user_turn,
        clock: { white_ms, black_ms, increment_ms } | null,
-       hint_credits: int }
+       hint_credits: int, engine_elo: int }
+
+  `engine_elo` is 600..3190 and must be one of `strength.LADDER`'s rungs —
+  a value between two rungs rounds down and plays identically to the lower
+  one. At or above 1320 it is Stockfish's own `UCI_Elo` calibration; below
+  that floor `UCI_Elo` is ignored by the engine, so the rung is a
+  `Skill Level` + depth cap approximation instead (`chess_coach/strength.py`).
+
+  The opponent engine is strength-limited, so its score is not evidence:
+  every eval persisted during a live game comes from the full-strength
+  analyst engine, never from the opponent.
 
 POST /play/{game_id}/move
   { uci: str, elapsed_ms: int|null }        # time the USER spent on this move
@@ -455,6 +465,21 @@ counts — all read from the journal/engine — and appends the user's messages.
 When `available` is false the endpoint returns a single SSE frame explaining
 that the coach is offline and the local analysis still works. It never fakes
 a reply.
+
+### 7.8 Openings primer — `api_openings.py` (NEW)
+
+```
+GET /openings/primer
+  -> { principles: [ {id, title, body} ],
+       lines: [ {id, title, subtitle, perspective, start_fen,
+                 plies: [ {ply, san, fen, side, note, principle_id} ] } ] }
+```
+
+Static and engine-free: content is a curated table replayed through
+python-chess at import time (`chess_coach/openings.py`), not looked up. No
+`Journal`, no `EnginePool`, nothing that can go stale or be affected by an
+offline Stockfish. Principles, not lines — ROADMAP.md §4 (Phase 9) is the
+data-driven repertoire; this is not that.
 
 ---
 

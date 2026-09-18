@@ -14,6 +14,8 @@ still thinking).
 `EnginePool` gives each job its own process and its own lock:
 
 - `opponent`: multipv=1, threads=1, hash_mb=64 — the in-game reply engine.
+  It only ever returns *moves* (`opponent_move`); it is strength-limited
+  per game, so its scores are not evidence and are never persisted.
 - `analyst`: multipv=3, threads=2, hash_mb=128 — review, guard, hints,
   highlight detection.
 
@@ -35,6 +37,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from .engine import DEFAULT_DEPTH, EngineError, EngineLine, EngineOptions, StockfishEngine
+from .strength import strength_for_elo
 
 
 # In-game engine calls use a shallower depth than review/analyst calls so a
@@ -88,12 +91,28 @@ class EnginePool:
         """True iff at least the opponent engine is usable (drives /health)."""
         return self.opponent is not None and self.analyst is not None
 
-    def opponent_analyse(self, fen: str, *, depth: int = LIVE_DEPTH) -> list[EngineLine]:
-        """Analyse `fen` with the opponent engine (multipv=1), lock held for the call."""
+    def opponent_move(self, fen: str, *, elo: int) -> Optional[str]:
+        """The opponent's reply at `elo`, as a UCI move — or None if there is none.
+
+        Deliberately returns a *move* and not an `EngineLine`. A weakened
+        engine's evaluation is not evidence of anything: Skill Level
+        randomises move choice and the depth cap here can be as low as 1,
+        so its score would be noise. Persisting it would feed that noise
+        into `mistakes` and ACPL, which is precisely the "engine output is
+        the truth layer" guarantee the project rests on. Callers that need
+        an eval for the same position must ask `analyst_analyse`.
+
+        The strength options are re-applied on every call. They are sticky
+        on the process and the pool is shared across concurrent games, so
+        the engine's current setting is never safe to assume.
+        """
         if self.opponent is None:
             raise EngineError(self.opponent_error or "opponent engine not available")
+        strength = strength_for_elo(elo)
         with self._opponent_lock:
-            return self.opponent.analyse(fen, depth=depth, multipv=1)
+            self.opponent.apply_strength(strength)
+            lines = self.opponent.analyse(fen, depth=strength.depth, multipv=1)
+        return lines[0].best_uci if lines else None
 
     def analyst_analyse(
         self, fen: str, *, depth: int = DEFAULT_DEPTH, multipv: int = 3

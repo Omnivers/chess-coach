@@ -3,7 +3,29 @@
 
 .rail { display: flex; flex-direction: column; gap: var(--space-4); }
 
-.rail-section h2 { margin-bottom: var(--space-2); }
+.rail-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+.rail-head .section-title { margin: 0; }
+
+.rail-lede {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin: 0 0 var(--space-2);
+}
+
+.rail-subhead {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  margin: 0 0 var(--space-2);
+}
 
 .process-prompt {
   list-style: none;
@@ -14,46 +36,92 @@
   gap: var(--space-2);
 }
 .process-prompt li {
-  display: flex;
-  gap: var(--space-2);
-  align-items: flex-start;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   color: var(--ink-soft);
 }
-.process-prompt input[type="checkbox"] {
-  margin-top: 0.2em;
-  accent-color: var(--accent);
-}
-.process-prompt li.checked { color: var(--ink-faint); text-decoration: line-through; }
 
 .phase-marker {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--accent);
+  white-space: nowrap;
+}
+
+.scan-list {
+  list-style: none;
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.scan-row {
+  background: var(--paper-high, var(--paper));
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  transition: transform var(--duration-fast) var(--ease-out-expo), box-shadow var(--duration-fast) var(--ease-out-expo);
+}
+.scan-row:hover { transform: translateY(-1px); box-shadow: var(--shadow-1, none); }
+.scan-row:focus-within { transform: translateY(-1px); box-shadow: var(--shadow-1, none); }
+.scan-row label {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-start;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+}
+.scan-row input[type="checkbox"] {
+  margin-top: 0.2em;
+  accent-color: var(--accent);
+  flex-shrink: 0;
+}
+.scan-text { display: flex; flex-direction: column; gap: 0.2em; }
+.scan-name { font-size: 0.86rem; font-weight: 600; color: var(--ink); }
+.scan-question { font-size: 0.78rem; color: var(--ink-soft); line-height: 1.4; }
+.scan-row.checked { opacity: 0.6; }
+.scan-row.checked .scan-name,
+.scan-row.checked .scan-question { text-decoration: line-through; color: var(--ink-faint); }
+
+.scan-note,
+.credit-note {
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+  font-family: var(--font-serif);
+  font-style: italic;
+  line-height: 1.5;
+  margin: 0 0 var(--space-2);
 }
 
 .hint-ladder { display: flex; flex-direction: column; gap: var(--space-2); }
 
 .hint-credits {
   display: flex;
-  gap: 0.3em;
+  align-items: center;
+  gap: var(--space-2);
   font-size: 0.9rem;
 }
+.hint-dots { display: flex; gap: 0.3em; }
 .hint-credits .dot { color: var(--accent); }
 .hint-credits .dot.spent { color: var(--rule); }
+.hint-credits-label { font-size: 0.76rem; color: var(--ink-soft); }
 
 .hint-tier {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--space-2);
+  row-gap: 0.25em;
   width: 100%;
   text-align: left;
   background: var(--paper);
+  border-radius: var(--radius-sm);
+  transition: transform var(--duration-fast) var(--ease-out-expo), background-color var(--duration-fast) var(--ease-out-expo);
 }
+.hint-tier:hover:not(:disabled) { transform: translateY(-1px); background: var(--paper-high, var(--paper-raised)); }
 .hint-tier .tier-name { font-weight: 600; font-size: 0.82rem; }
-.hint-tier .tier-cost { font-size: 0.72rem; color: var(--ink-faint); font-family: var(--font-mono); }
+.hint-tier .tier-cost { font-size: 0.72rem; color: var(--ink-faint); font-family: var(--font-mono); text-align: right; }
+.hint-tier .tier-desc { grid-column: 1 / -1; font-size: 0.76rem; color: var(--ink-soft); line-height: 1.4; }
+.hint-tier:disabled { opacity: 0.45; cursor: not-allowed; }
 .hint-tier:disabled .tier-name { color: var(--ink-faint); }
 
 .hint-response {
@@ -90,6 +158,9 @@
 
 @media (prefers-reduced-motion: no-preference) {
   .hint-response, .guard-confirm { animation: rail-in var(--duration-normal) var(--ease-out-expo); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scan-row:hover, .scan-row:focus-within, .hint-tier:hover:not(:disabled) { transform: none; }
 }
 @keyframes rail-in {
   from { opacity: 0; transform: translateY(-4px); }

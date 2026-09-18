@@ -175,6 +175,30 @@ class StockfishEngine:
             ))
         return out
 
+    def apply_strength(self, strength) -> None:
+        """Set the strength-limiting options for subsequent `analyse` calls.
+
+        Takes a `strength.Strength`; typed loosely to keep engine.py free
+        of an import from a module that is about game feel rather than
+        UCI. Both mechanisms are always written, including the "off"
+        value, because these options are sticky on the process: leaving
+        `Skill Level` at 0 from a previous game would quietly weaken a
+        full-strength one.
+        """
+        self._send(
+            "setoption name UCI_LimitStrength value "
+            + ("true" if strength.limit_strength else "false")
+        )
+        if strength.uci_elo is not None:
+            self._send(f"setoption name UCI_Elo value {strength.uci_elo}")
+        # Skill Level 20 is the engine default, i.e. "no handicap".
+        self._send(
+            "setoption name Skill Level value "
+            f"{20 if strength.skill_level is None else strength.skill_level}"
+        )
+        self._send("isready")
+        self._expect("readyok")
+
     def close(self) -> None:
         """Send `quit` and wait. Idempotent."""
         proc = getattr(self, "_proc", None)

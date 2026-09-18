@@ -14,16 +14,44 @@ body {
 
 img, svg, canvas { max-width: 100%; display: block; }
 
+/* Headings carry the hierarchy. h2 used to be a 0.72rem uppercase whisper
+   in --ink-faint, which meant every section title on every page was quieter
+   than its own body text and the pages read as one undifferentiated column.
+   The uppercase-label treatment still exists — it just has to be asked for
+   by name now (.eyebrow), because it is a label, not a heading. */
 h1, h2, h3 { font-family: var(--font-serif); font-weight: 600; line-height: 1.2; margin: 0; }
-h1 { font-size: 1.15rem; letter-spacing: 0.01em; }
-h2 {
-  font-size: 0.72rem;
+h1 { font-size: var(--text-h1); letter-spacing: -0.01em; }
+h2, .section-title {
+  font-family: var(--font-serif);
+  font-size: var(--text-h2);
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.005em;
+  text-transform: none;
+  color: var(--ink);
+  margin: 0;
+}
+h3 { font-size: var(--text-body); color: var(--ink-soft); }
+
+/* The old h2 look, now opt-in: section eyebrows, column headers, metadata. */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--ink-faint);
-  font-weight: 600;
+  font-weight: 500;
 }
+
 p { margin: 0 0 var(--space-3); }
+/* Introductory line under a heading — the one place body copy is allowed to
+   be softer than the text around it. */
+.lede {
+  color: var(--ink-soft);
+  font-size: var(--text-body);
+  line-height: 1.55;
+  max-width: 58ch;
+}
 
 a { color: var(--accent); }
 
@@ -39,13 +67,22 @@ button {
   transition: border-color var(--duration-fast) var(--ease-out-expo),
               transform var(--duration-fast) var(--ease-out-expo);
 }
-button:hover:not(:disabled) { border-color: var(--accent); }
+button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--paper-high);
+}
 button:active:not(:disabled) { transform: translateY(1px); }
 button:disabled { opacity: 0.45; cursor: not-allowed; }
 button.primary {
   background: var(--accent);
   color: var(--on-accent);
   border-color: var(--accent);
+  font-weight: 600;
+  box-shadow: var(--shadow-1);
+}
+button.primary:hover:not(:disabled) {
+  background: color-mix(in oklch, var(--accent) 88%, var(--ink));
+  border-color: color-mix(in oklch, var(--accent) 88%, var(--ink));
 }
 
 :focus-visible {
@@ -75,10 +112,17 @@ button.primary {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  opacity: 0.035;
+  opacity: 0.04;
   mix-blend-mode: multiply;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
+
+/* multiply over a near-black ground does nothing; on dark the grain has to
+   add light rather than subtract it. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .grain { mix-blend-mode: soft-light; opacity: 0.16; }
+}
+:root[data-theme="dark"] .grain { mix-blend-mode: soft-light; opacity: 0.16; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

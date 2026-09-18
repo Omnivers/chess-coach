@@ -8,22 +8,38 @@
    where the board would otherwise take the full column width and push
    the clocks and the coaching rail off-screen — the rail is the point of
    the app, so the board never gets to fill the window on its own. */
+/* The board is the loudest object on the page by design: the only thing
+   with a frame, and the only thing on the second elevation step. The frame
+   is a hairline of the dark square colour so it reads as the edge of a
+   physical board rather than a UI border.
+
+   It lives here, on a plain element chessground never touches, and
+   NOT on .board-surface. chessground adds its own `cg-wrap` class to the
+   element it mounts into, measures that element's *border box* with
+   getBoundingClientRect(), and writes the result as an inline width/height
+   onto the <cg-container> it creates inside. A border on the mount element
+   is therefore counted twice: once in the measurement, once in the padding
+   box the container is positioned against — so the board rendered wider
+   than its own frame and `overflow: hidden` sliced the h-file off. */
 #board-wrap {
+  box-sizing: border-box;
   width: min(100%, 640px, calc(100svh - 170px));
   margin: 0 auto;
+  border-radius: var(--radius-md);
+  border: 3px solid color-mix(in oklch, var(--board-dark) 82%, black);
+  box-shadow: var(--shadow-2);
+  overflow: hidden;
 }
 
 /* Every view mounts chessground into `#board-wrap > .board-surface`.
    This used to be `#board`, the play view's id — so the review and drill
    boards, which mount into `#review-board` and `#drill-board`, inherited
    no width and no aspect-ratio and collapsed to nothing. The class is
-   what "a mounted board" means; the ids stay for JS to query. */
+   what "a mounted board" means; the ids stay for JS to query.
+   Nothing but size goes here — see the note on #board-wrap above. */
 .board-surface {
   width: 100%;
   aspect-ratio: 1;
-  border-radius: var(--radius-md);
-  box-shadow: 0 10px 24px -12px hsl(var(--shadow-color) / 0.45);
-  overflow: hidden;
 }
 
 /* The checkerboard. chessground only creates <square> elements for
@@ -75,17 +91,27 @@ cg-board square.current-premove {
   background-color: oklch(70% 0.14 75 / 55%);
 }
 
+/* chessground's stock coordinates are positioned for lichess's layout, which
+   leaves a margin *outside* the board for them: `coords.ranks` sits at
+   `top: -20px` and `coords.files` at `left: 24px; bottom: -4px` with
+   `width: 100%`, so the file letters run 24px past the right edge and the
+   ranks start above the top one. Our board has no outside margin — it is
+   framed and clipped — so the h-file letter and the top of the rank column
+   were being sliced off. Put both inside the board instead. */
 coords {
   color: var(--ink-faint);
   font-family: var(--font-mono);
   font-size: 0.6rem;
 }
 
+.cg-wrap coords.ranks { top: 0; left: 3px; }
+.cg-wrap coords.files { bottom: 0; left: 0; }
+
 /* our own drawn shapes (hint highlights / arrows) inherit currentColor from
    the brush definitions set in board.js; nothing to override here. */
 
 .cg-wrap piece {
-  filter: drop-shadow(0 1px 1px oklch(0% 0 0 / 0.25));
+  filter: drop-shadow(0 1px 2px oklch(0% 0 0 / 0.30));
 }
 
 @media (prefers-reduced-motion: no-preference) {

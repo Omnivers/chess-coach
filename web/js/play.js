@@ -18,7 +18,25 @@ const TIME_CONTROLS = [
   { value: '3+2', label: '3+2 · Blitz (measures, does not teach)' },
   { value: 'unlimited', label: 'Unlimited' },
 ];
-const ELOS = [1200, 1400, 1500, 1800, 2000, 2400];
+// Mirrors `chess_coach/strength.LADDER`. The rungs below 1320 are not
+// Stockfish's own calibration — UCI_Elo refuses to go there — so they are
+// Skill Level + a depth cap, tuned to be beatable rather than measured.
+// Offering a value between two rungs would silently round down and make
+// two buttons play identically, so this list must stay in step with the
+// server's.
+const ELOS = [
+  { value: 600, label: '600 · Learning the pieces' },
+  { value: 800, label: '800 · Beginner' },
+  { value: 1000, label: '1000 · Improving' },
+  { value: 1200, label: '1200 · Club novice' },
+  { value: 1400, label: '1400 Elo' },
+  { value: 1600, label: '1600 Elo' },
+  { value: 1800, label: '1800 Elo' },
+  { value: 2000, label: '2000 Elo' },
+  { value: 2400, label: '2400 Elo' },
+  { value: 2800, label: '2800 · Master' },
+];
+const DEFAULT_ELO = 1000;
 
 let board = null;
 let clockTicker = null;
@@ -56,7 +74,7 @@ export function mount(root) {
       <div id="guard-slot"></div>
       <div id="result-slot"></div>
     </section>
-    <aside class="rail-col panel rail" id="rail" aria-label="Coach rail"></aside>
+    <aside class="rail-col panel feature rail" id="rail" aria-label="Coach rail"></aside>
   `;
   root.appendChild(layout);
   els = {
@@ -111,7 +129,7 @@ function renderControls() {
     </select>
     <label class="visually-hidden" for="elo-select">Engine strength</label>
     <select id="elo-select">
-      ${ELOS.map((e) => `<option value="${e}" ${e === 1500 ? 'selected' : ''}>${e} Elo</option>`).join('')}
+      ${ELOS.map((e) => `<option value="${e.value}" ${e.value === DEFAULT_ELO ? 'selected' : ''}>${e.label}</option>`).join('')}
     </select>
     <label class="visually-hidden" for="tc-select">Time control</label>
     <select id="tc-select">

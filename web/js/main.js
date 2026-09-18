@@ -6,6 +6,7 @@ import * as playView from './play.js';
 import * as reviewView from './review.js';
 import * as drillsView from './drills.js';
 import * as studyView from './study.js';
+import * as openingsView from './openings.js';
 import * as chat from './chat.js';
 
 const THEME_CYCLE = ['system', 'light', 'dark'];
@@ -13,6 +14,7 @@ const THEME_ICON = { system: '◐', light: '☀', dark: '☾' };
 
 const ROUTES = [
   { pattern: /^#\/review\/(.+)$/, name: 'review', view: reviewView, params: (m) => ({ id: decodeURIComponent(m[1]) }) },
+  { pattern: /^#\/openings$/, name: 'openings', view: openingsView, params: () => ({}) },
   { pattern: /^#\/drills$/, name: 'drills', view: drillsView, params: () => ({}) },
   { pattern: /^#\/study$/, name: 'study', view: studyView, params: () => ({}) },
   { pattern: /^#\/play$/, name: 'play', view: playView, params: () => ({}) },
@@ -52,8 +54,13 @@ function updateNav(routeName) {
 
 async function route() {
   const hash = window.location.hash || '#/play';
+  // The fallback has to have the same { r, m } shape as a match. It used to
+  // be a bare `ROUTES.find(...)`, i.e. a route object with no `r` on it — so
+  // any hash outside the table (a typo, an old bookmark, `#/review` without
+  // an id) destructured `r` as undefined, threw on `r.view`, and left the
+  // previous view's DOM on screen with the nav still pointing at it.
   const match = ROUTES.map((r) => ({ r, m: hash.match(r.pattern) })).find((x) => x.m);
-  const { r, m } = match || ROUTES.find((r) => r.name === 'play');
+  const { r, m } = match || { r: ROUTES.find((x) => x.name === 'play'), m: null };
 
   currentView?.unmount?.();
   currentView = r.view;

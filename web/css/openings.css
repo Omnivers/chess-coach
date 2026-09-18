@@ -1,0 +1,146 @@
+/* #/openings — the principles primer. The line picker spans the full
+   width; below it two columns: the board with the note for the current
+   ply directly under it (the note describes the position on screen, so
+   it has to sit next to it, not across the page), and the move list +
+   principles alongside. Collapses to one column under ~900px like the
+   other views (see app.css `main`'s note on container queries). */
+
+.openings-intro {
+  max-width: 62ch;
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.openings-layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 520px) minmax(280px, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+/* 900px ~= 340 + 300 + a 2rem gap + panel padding headroom. */
+@container view (max-width: 900px) {
+  .openings-layout { grid-template-columns: 1fr; }
+}
+
+.openings-subtitle {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+
+/* The picker is the first choice on the page, so it reads as a row of
+   options rather than a centred cluster — centring made the four
+   different-width pills wrap into a ragged staircase. */
+#line-picker {
+  justify-content: flex-start;
+  margin-bottom: var(--space-4);
+}
+#line-picker button {
+  font-size: 0.8rem;
+  border-radius: 999px;
+  transition: border-color var(--duration-fast) var(--ease-out-expo),
+              background var(--duration-fast) var(--ease-out-expo),
+              color var(--duration-fast) var(--ease-out-expo);
+}
+#line-picker button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+
+/* --- move list --- */
+.note-panel { margin-top: var(--space-3); }
+
+.opening-moves {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.85rem;
+  border-top: 1px solid var(--rule);
+}
+.opening-move-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border-bottom: 1px solid var(--rule);
+}
+.opening-move-row:nth-child(even) { background: color-mix(in oklch, var(--paper) 60%, transparent); }
+.opening-move-num { color: var(--ink-faint); min-width: 2.2em; }
+/* The start row is a peer of the moves, not a banner: a full-width
+   button picked up the `.current` accent on load and became the loudest
+   thing on the page. */
+.start-row .opening-ply { text-align: left; }
+.start-row { color: var(--ink-faint); }
+
+.opening-ply {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.1em 0.5em;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-out-expo),
+              color var(--duration-fast) var(--ease-out-expo),
+              transform var(--duration-fast) var(--ease-out-expo);
+}
+.opening-ply:hover { border-color: var(--rule); }
+.opening-ply:active { transform: translateY(1px); }
+.opening-ply.opponent { color: var(--ink-faint); }
+.opening-ply.current {
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 600;
+}
+.opening-ply.principle-lit:not(.current) {
+  background: color-mix(in oklch, var(--warn) 30%, var(--paper-raised));
+  color: var(--ink);
+}
+
+/* --- principles --- */
+.principle-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-3);
+}
+.principle-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  text-align: left;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left: 3px solid var(--rule);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-out-expo),
+              transform var(--duration-fast) var(--ease-out-expo);
+}
+.principle-card:hover { border-left-color: var(--accent); transform: translateY(-1px); }
+.principle-card.active {
+  border-left-color: var(--warn);
+  background: color-mix(in oklch, var(--warn) 12%, var(--paper));
+}
+.principle-title { font-weight: 600; font-size: 0.9rem; }
+.principle-body { font-size: 0.8rem; color: var(--ink-soft); line-height: 1.5; }
+
+/* --- note panel --- */
+.note-principle-label {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  margin-bottom: var(--space-1);
+}
+#ply-note p {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  margin: 0;
+}

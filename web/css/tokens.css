@@ -1,32 +1,72 @@
-/* Design tokens — "the study". Warm paper by default; a walnut/tobacco
-   dark variant, never a grey SaaS dark mode. Colour is semantic only:
-   good/warn/bad map to move quality, accent marks "the engine spoke". */
+/* Design tokens — "the study, after hours".
+ *
+ * Direction: a warm, low-chroma espresso ground with cream ink, one cool
+ * petrol-blue instrument accent, and a classic high-contrast cream/walnut
+ * board. Not a grey SaaS dark mode, and not the all-one-brown version this
+ * replaced — that failed because the page, the panels and the board's dark
+ * squares all sat within five lightness points of each other in the same
+ * hue, so nothing separated figure from ground and the whole screen read as
+ * mud. The rules that came out of that:
+ *
+ *  1. SURFACES SEPARATE BY LIGHTNESS, NOT HUE. paper -> paper-raised ->
+ *     paper-high step by ~5%, ~5%, and the board's two square colours sit a
+ *     full 40 points apart. A chessboard whose light and dark squares are
+ *     hard to tell apart is not a style choice, it's a broken board.
+ *  2. THE GROUND IS ALMOST ACHROMATIC. Chroma 0.010 on the dark surfaces:
+ *     enough warmth to read as paper/wood, not enough to read as brown
+ *     paint. Saturation is spent on the four semantic colours, nowhere else.
+ *  3. COLOUR IS SEMANTIC ONLY. good/warn/bad mean move quality and nothing
+ *     else; accent means "the engine spoke". Nothing on this site is
+ *     coloured for decoration, which is why the accent can stay loud.
+ */
 
 :root {
-  --paper:        oklch(96% 0.012 85);
-  --paper-raised: oklch(98% 0.008 85);
-  --ink:          oklch(22% 0.02 60);
-  --ink-soft:     oklch(46% 0.02 60);
-  --ink-faint:    oklch(66% 0.015 60);
-  --rule:         oklch(88% 0.012 75);
-  --board-light:  oklch(88% 0.035 80);
-  --board-dark:   oklch(52% 0.055 55);
-  --good:         oklch(55% 0.13 150);
-  --warn:         oklch(70% 0.14 75);
-  --bad:          oklch(55% 0.17 25);
-  --accent:       oklch(48% 0.10 250);
+  /* --- surfaces: page, panel, the thing on top of the panel --- */
+  --paper:        oklch(95.5% 0.010 85);
+  --paper-raised: oklch(99% 0.006 85);
+  --paper-high:   oklch(100% 0 0);
+
+  --ink:          oklch(21% 0.018 55);
+  --ink-soft:     oklch(44% 0.018 55);
+  --ink-faint:    oklch(62% 0.014 60);
+  --rule:         oklch(86% 0.012 75);
+
+  /* The board is the one place chroma is allowed to run: 40 points of
+     lightness between the squares, so the position is legible at a glance
+     and from across the room. */
+  --board-light:  oklch(90% 0.035 82);
+  --board-dark:   oklch(50% 0.080 48);
+
+  --good:         oklch(50% 0.135 150);
+  --warn:         oklch(62% 0.145 68);
+  --bad:          oklch(52% 0.180 25);
+  --accent:       oklch(45% 0.130 238);
 
   /* on-color text for filled badges */
-  --on-good:  oklch(98% 0.01 150);
-  --on-warn:  oklch(20% 0.02 75);
-  --on-bad:   oklch(98% 0.01 25);
-  --on-accent: oklch(98% 0.01 250);
+  --on-good:   oklch(98% 0.01 150);
+  --on-warn:   oklch(20% 0.02 68);
+  --on-bad:    oklch(98% 0.01 25);
+  --on-accent: oklch(99% 0.01 238);
 
-  --shadow-color: 60 8% 20%;
+  --shadow-color: 55 12% 30%;
+  --shadow-1: 0 1px 2px hsl(var(--shadow-color) / 0.07),
+              0 2px 8px -2px hsl(var(--shadow-color) / 0.06);
+  --shadow-2: 0 2px 4px hsl(var(--shadow-color) / 0.08),
+              0 12px 28px -8px hsl(var(--shadow-color) / 0.14);
 
   /* type */
   --font-serif: 'Spectral', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Type scale. The old design had exactly one size for every heading on
+     the site (0.72rem, uppercase, faint) and no scale contrast anywhere —
+     which is most of why it read as unfinished. */
+  --text-label: 0.72rem;   /* uppercase letterspaced eyebrow */
+  --text-fine:  0.78rem;   /* captions, costs, notes */
+  --text-body:  0.88rem;
+  --text-h2:    1.06rem;   /* section titles, serif */
+  --text-h1:    1.35rem;
+  --text-display: clamp(1.6rem, 1.1rem + 1.6vw, 2.4rem);
 
   /* rhythm — deliberately uneven, not a uniform 8px grid */
   --space-1: 0.25rem;
@@ -44,49 +84,67 @@
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Dark: walnut/tobacco ground, cream ink — never neutral grey. */
+/* Dark: espresso ground, cream ink. Defined once here and re-applied under
+   the explicit [data-theme="dark"] selector below so the in-app toggle wins
+   over the OS preference in both directions. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper:        oklch(24% 0.018 55);
-    --paper-raised: oklch(28% 0.02 55);
-    --ink:          oklch(92% 0.012 85);
-    --ink-soft:     oklch(76% 0.014 80);
-    --ink-faint:    oklch(56% 0.012 75);
-    --rule:         oklch(36% 0.02 55);
-    --board-light:  oklch(46% 0.045 70);
-    --board-dark:   oklch(27% 0.05 50);
-    --good:         oklch(72% 0.15 150);
-    --warn:         oklch(80% 0.15 80);
-    --bad:          oklch(70% 0.18 27);
-    --accent:       oklch(75% 0.12 250);
+    --paper:        oklch(17% 0.010 55);
+    --paper-raised: oklch(22.5% 0.012 55);
+    --paper-high:   oklch(27% 0.013 55);
 
-    --on-good:  oklch(18% 0.02 150);
-    --on-warn:  oklch(18% 0.02 80);
-    --on-bad:   oklch(18% 0.02 27);
-    --on-accent: oklch(15% 0.02 250);
+    --ink:          oklch(95% 0.010 85);
+    --ink-soft:     oklch(78% 0.012 82);
+    --ink-faint:    oklch(57% 0.012 78);
+    --rule:         oklch(31% 0.014 55);
 
-    --shadow-color: 55 20% 4%;
+    --board-light:  oklch(84% 0.040 82);
+    --board-dark:   oklch(42% 0.075 48);
+
+    --good:         oklch(72% 0.155 150);
+    --warn:         oklch(78% 0.145 72);
+    --bad:          oklch(66% 0.190 25);
+    --accent:       oklch(70% 0.135 235);
+
+    --on-good:   oklch(16% 0.02 150);
+    --on-warn:   oklch(16% 0.02 72);
+    --on-bad:    oklch(16% 0.02 25);
+    --on-accent: oklch(14% 0.02 235);
+
+    --shadow-color: 40 30% 2%;
+    --shadow-1: 0 1px 2px hsl(var(--shadow-color) / 0.5),
+                0 2px 8px -2px hsl(var(--shadow-color) / 0.4);
+    --shadow-2: 0 2px 4px hsl(var(--shadow-color) / 0.5),
+                0 14px 32px -8px hsl(var(--shadow-color) / 0.6);
   }
 }
 
 :root[data-theme="dark"] {
-  --paper:        oklch(24% 0.018 55);
-  --paper-raised: oklch(28% 0.02 55);
-  --ink:          oklch(92% 0.012 85);
-  --ink-soft:     oklch(76% 0.014 80);
-  --ink-faint:    oklch(56% 0.012 75);
-  --rule:         oklch(36% 0.02 55);
-  --board-light:  oklch(46% 0.045 70);
-  --board-dark:   oklch(27% 0.05 50);
-  --good:         oklch(72% 0.15 150);
-  --warn:         oklch(80% 0.15 80);
-  --bad:          oklch(70% 0.18 27);
-  --accent:       oklch(75% 0.12 250);
+  --paper:        oklch(17% 0.010 55);
+  --paper-raised: oklch(22.5% 0.012 55);
+  --paper-high:   oklch(27% 0.013 55);
 
-  --on-good:  oklch(18% 0.02 150);
-  --on-warn:  oklch(18% 0.02 80);
-  --on-bad:   oklch(18% 0.02 27);
-  --on-accent: oklch(15% 0.02 250);
+  --ink:          oklch(95% 0.010 85);
+  --ink-soft:     oklch(78% 0.012 82);
+  --ink-faint:    oklch(57% 0.012 78);
+  --rule:         oklch(31% 0.014 55);
 
-  --shadow-color: 55 20% 4%;
+  --board-light:  oklch(84% 0.040 82);
+  --board-dark:   oklch(42% 0.075 48);
+
+  --good:         oklch(72% 0.155 150);
+  --warn:         oklch(78% 0.145 72);
+  --bad:          oklch(66% 0.190 25);
+  --accent:       oklch(70% 0.135 235);
+
+  --on-good:   oklch(16% 0.02 150);
+  --on-warn:   oklch(16% 0.02 72);
+  --on-bad:    oklch(16% 0.02 25);
+  --on-accent: oklch(14% 0.02 235);
+
+  --shadow-color: 40 30% 2%;
+  --shadow-1: 0 1px 2px hsl(var(--shadow-color) / 0.5),
+              0 2px 8px -2px hsl(var(--shadow-color) / 0.4);
+  --shadow-2: 0 2px 4px hsl(var(--shadow-color) / 0.5),
+              0 14px 32px -8px hsl(var(--shadow-color) / 0.6);
 }

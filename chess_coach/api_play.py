@@ -47,6 +47,7 @@ from .journal import (
     utc_now_iso,
 )
 from .play import LiveGame, build_pgn, check_termination, parse_time_control, ply_of
+from .strength import MIN_ELO, STOCKFISH_MAX_ELO
 
 
 # A live game doesn't know its final length. `_phase_for_ply` wants a
@@ -92,6 +93,10 @@ class NewGameResponse(BaseModel):
     is_user_turn: bool
     clock: Optional[ClockFull]
     hint_credits: int
+    # Echoed back because it is now load-bearing: it selects the opponent's
+    # actual UCI settings (see `strength.py`). Before that it was decoration
+    # and there was nothing worth confirming.
+    engine_elo: int
     # Populated only when the engine moves first (user plays black), so the
     # client never has to brute-force which of the 20 legal first moves it
     # was.
@@ -169,23 +174,33 @@ class GameStateResponse(BaseModel):
 # --- engine helpers -------------------------------------------------------
 
 
-def _analyst_lines(pool: EnginePool, fen: str, *, multipv: int = 1) -> list[EngineLine]:
+def _analyst_lines(
+    pool: EnginePool, fen: str, *, multipv: int = 1, depth: int = DEFAULT_DEPTH,
+) -> list[EngineLine]:
     """Analyst call that degrades to an empty list rather than raising.
 
     An offline/failed engine must not crash play — it just means feedback,
     highlights, and mistake rows go quiet for that move.
     """
     try:
-        return pool.analyst_analyse(fen, depth=DEFAULT_DEPTH, multipv=multipv)
+        return pool.analyst_analyse(fen, depth=depth, multipv=multipv)
     except EngineError:
         return []
 
 
-def _opponent_line(pool: EnginePool, fen: str) -> Optional[EngineLine]:
-    try:
-        lines = pool.opponent_analyse(fen, depth=LIVE_DEPTH)
-    except EngineError:
-        return None
+def _live_eval(pool: EnginePool, fen: str) -> Optional[EngineLine]:
+    """The position's evaluation during a live game — always full strength.
+
+    This has to be the *analyst*, never the opponent. The opponent engine
+    is deliberately weakened to `lg.engine_elo` (see `strength.py`), and a
+    handicapped engine's score is noise: Skill Level randomises its choice
+    and its depth cap can be as low as 1. That number is persisted as the
+    position's eval and feeds `mistakes`, ACPL and every downstream
+    statistic, so taking it from the opponent would quietly corrupt the
+    journal the weaker the opponent got. `LIVE_DEPTH` keeps it fast enough
+    to sit inside a move response.
+    """
+    lines = _analyst_lines(pool, fen, multipv=1, depth=LIVE_DEPTH)
     return lines[0] if lines else None
 
 
@@ -216,21 +231,30 @@ def _play_engine(
     """Engine picks and pushes a move. Returns (move, post_eval_line, san)."""
     if lg.board.is_game_over():
         return None, None, None
-    pre = _opponent_line(pool, lg.board.fen())
-    if pre is None:
+    fen_before = lg.board.fen()
+    # Two engines, two jobs: the weakened opponent decides *what to play*,
+    # the full-strength analyst decides *what the position is worth*. They
+    # used to be the same call, which is why weakening the opponent was
+    # never safe before now.
+    try:
+        best_uci = pool.opponent_move(fen_before, elo=lg.engine_elo)
+    except EngineError:
+        return None, None, None
+    if best_uci is None:
         return None, None, None
     try:
-        em = chess.Move.from_uci(pre.best_uci)
+        em = chess.Move.from_uci(best_uci)
     except (ValueError, chess.InvalidMoveError):
         return None, None, None
     if em not in lg.board.legal_moves:
         return None, None, None
     ply = ply_of(lg.board)
     san = lg.board.san(em)
-    _persist_position(journal, lg, ply, lg.board.fen(), em.uci(), san, None, pre)
+    pre = _live_eval(pool, fen_before)
+    _persist_position(journal, lg, ply, fen_before, em.uci(), san, None, pre)
     lg.board.push(em)
     lg.pgn_so_far.append(san)
-    post = _opponent_line(pool, lg.board.fen())
+    post = _live_eval(pool, lg.board.fen())
     return em, post, san
 
 
@@ -357,8 +381,11 @@ def build_router(
     def play_new(req: NewGameRequest) -> NewGameResponse:
         if req.user_color not in ("white", "black"):
             raise HTTPException(400, "user_color must be white or black")
-        if not 1200 <= req.engine_elo <= 3190:
-            raise HTTPException(400, "engine_elo must be between 1200 and 3190")
+        if not MIN_ELO <= req.engine_elo <= STOCKFISH_MAX_ELO:
+            raise HTTPException(
+                400,
+                f"engine_elo must be between {MIN_ELO} and {STOCKFISH_MAX_ELO}",
+            )
         try:
             tc = parse_time_control(req.time_control)
         except ValueError as exc:
@@ -411,6 +438,7 @@ def build_router(
             is_user_turn=(lg.board.turn == user_color),
             clock=clock_out,
             hint_credits=lg.hint_credits,
+            engine_elo=lg.engine_elo,
             engine_move_san=engine_move_san,
             engine_move_uci=engine_move_uci,
         )

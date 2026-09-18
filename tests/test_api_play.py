@@ -180,3 +180,48 @@ def test_play_move_terminated_rejected(client) -> None:
     client.post(f"/play/{game_id}/resign")
     resp = client.post(f"/play/{game_id}/move", json={"uci": "e2e4"})
     assert resp.status_code == 400
+
+
+# --- strength ladder -------------------------------------------------
+#
+# `engine_elo` used to travel the whole stack — request body, `games`
+# row, `live_state` mirror, response — without ever reaching Stockfish:
+# `grep -r UCI_Elo chess_coach/` returned nothing. Every game, at every
+# setting, was played by a full-strength engine at depth 12. These tests
+# pin the two halves of the fix: that beginner ratings are accepted, and
+# that weakening the opponent does not contaminate the journal.
+
+
+def test_play_new_accepts_beginner_elo(client) -> None:
+    """The floor used to be 1200, which is not a beginner opponent."""
+    resp = client.post("/play/new", json={"user_color": "white", "engine_elo": 800})
+    assert resp.status_code == 200
+    assert resp.json()["engine_elo"] == 800
+
+
+def test_persisted_evals_stay_full_strength_at_a_weak_elo(
+    client, tmp_journal,
+) -> None:
+    """The opponent is handicapped; the *evaluation* must not be.
+
+    At 600 the opponent searches to depth 1 — a score from that search is
+    noise, and it is the number that feeds `mistakes`, ACPL and every
+    downstream statistic. So the move comes from the weakened opponent
+    engine and the eval from the full-strength analyst. The observable
+    difference is search depth: if the eval rows were still coming from
+    the opponent, they would carry the opponent's depth cap.
+    """
+    from chess_coach.strength import strength_for_elo
+
+    weak_depth = strength_for_elo(600).depth
+    new = client.post(
+        "/play/new", json={"user_color": "white", "engine_elo": 600},
+    ).json()
+    client.post(f"/play/{new['game_id']}/move", json={"uci": "e2e4"})
+
+    with tmp_journal.read() as conn:
+        depths = [
+            r["depth"] for r in conn.execute("SELECT depth FROM evals").fetchall()
+        ]
+    assert depths, "the move should have written eval rows"
+    assert all(d > weak_depth for d in depths)

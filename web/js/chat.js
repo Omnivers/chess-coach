@@ -5,7 +5,7 @@
 
 import { api, ApiError, streamChat } from './api.js';
 import { getState, setState } from './state.js';
-import { makeT } from './i18n.js';
+import { makeT, getLang } from './i18n.js';
 import { strings } from './strings/chat.js';
 
 const t = makeT(strings);
@@ -134,6 +134,7 @@ async function send() {
   addLine('user', text);
 
   const gameId = getState().play.gameId || null;
+  const route = getState().route?.name ?? null;
   const assistantEl = addLine('assistant', '');
   let acc = '';
   try {
@@ -141,7 +142,7 @@ async function send() {
       acc += delta;
       assistantEl.textContent = acc;
       scrollIfPinned();
-    });
+    }, { lang: getLang(), route });
     if (acc) messages.push({ role: 'assistant', content: acc });
     else assistantEl.textContent = t('noResponse');
   } catch (err) {

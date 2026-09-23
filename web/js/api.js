@@ -48,11 +48,16 @@ export const api = {
 // Reads a text/event-stream body of `data: {...}` lines terminated by
 // `data: [DONE]`, invoking onDelta(text) for each frame carrying a delta.
 // Never uses innerHTML; callers render deltas via textContent.
-export async function streamChat(messages, gameId, onDelta) {
+export async function streamChat(messages, gameId, onDelta, opts = {}) {
   const res = await fetch(API + '/coach/chat', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, game_id: gameId ?? null }),
+    body: JSON.stringify({
+      messages,
+      game_id: gameId ?? null,
+      lang: opts.lang ?? 'fr',
+      route: opts.route ?? null,
+    }),
   });
   if (!res.ok || !res.body) {
     let detail = null;
